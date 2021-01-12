@@ -1,5 +1,4 @@
 import tensorflow as tf
-import numpy as np
 import copy
 
 from tf_utils import Tensorboard, MetricsManager, misc
@@ -46,12 +45,11 @@ class Solver:
             y = tf.keras.utils.to_categorical(tf.cast(batch["y"], tf.int32), self.params["out_ch"])
 
             if "train" in mode:
-                predictions, metrics = self.train_step(network, batch["x"], y)
+                predictions, metrics = self.train_step(network, batch["x"], y, mode)
             else:
-                predictions, metrics = self.test_step(network, batch["x"], y)
+                predictions, metrics = self.test_step(network, batch["x"], y, mode)
 
-            if "train" in mode or "val" in mode:
-                self.tb_manager.update_metrics(metrics)
+            self.tb_manager.update_metrics(metrics)
 
         epoch_metrics = self.tb_manager.get_current_metrics()
         self.tb_manager.write_summary(mode, n_epoch, {"x": batch["x"], "y": tf.expand_dims(batch["y"], -1), "pred": predictions})
@@ -62,10 +60,10 @@ class Solver:
         return epoch_metrics
 
     @tf.function
-    def train_step(self, network, x, y):
+    def train_step(self, network, x, y, mode):
 
         with tf.GradientTape() as tape:
-            logits = network(x, training=True)
+            logits = network(x, training=True, mode=mode)
             dice_scores_by_class = self.loss_manager.dice_score_from_logits(y, logits)
             loss = self.loss_manager.metrics[self.params["loss"]](y, logits)
 
@@ -75,8 +73,8 @@ class Solver:
         return misc.get_argmax_prediction(logits), {"loss": loss, "dice_score_by_class": dice_scores_by_class}
 
     @tf.function
-    def test_step(self, network, x, y):
-        logits = network(x, training=False)
+    def test_step(self, network, x, y, mode):
+        logits = network(x, training=False, mode=mode)
 
         if y is None:
             return misc.get_argmax_prediction(logits)

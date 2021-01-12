@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-from tf_utils import UNet, TFRecordsManager, misc
-from model import seg_solver
+from tf_utils import TFRecordsManager, misc
+from model import seg_solver, unet
 
 
 def main(params):
@@ -13,13 +13,17 @@ def main(params):
     records_manager = TFRecordsManager()
     params["out_ch"] = len(list(range(2)))
     datasets = records_manager.load_datasets(data_path, params["batch_size"])
+    modes = list(datasets.keys())
 
     # Model
-    network = UNet(params["out_ch"], params["n_layers"], params["starting_filters"], params["k_size"], params["kernel_initializer"], params["batch_norm"], params["dropout"],
-                   tf.keras.layers.LeakyReLU, params["conv_per_layer"], params["max_pool"], params["upsampling"], params["kernel_regularizer"], None)
-    #network.summary((128, 128, 128, 1))
+    network = unet.UNet(params["out_ch"], params["n_layers"], params["starting_filters"], params["k_size"], params["kernel_initializer"], params["batch_norm"],
+                        params["dropout"], tf.keras.layers.LeakyReLU, params["conv_per_layer"], params["max_pool"], params["upsampling"],
+                        params["kernel_regularizer"], modes)
+    for mode in modes:
+        network.normalizers[mode].adapt(datasets[mode].map(lambda x: x["x"]))
+        # network.summary((128, 128, 128, 1), mode)
 
-    slv = seg_solver.Solver(ckp_path, params, list(datasets.keys()))
+    slv = seg_solver.Solver(ckp_path, params, modes)
     for n_epoch in range(1000000):
         for mode in datasets:
             slv.iterate_dataset(network, datasets[mode], mode, n_epoch)
@@ -49,7 +53,7 @@ if __name__ == "__main__":
     kernel_initializer_vector = ["he_normal"]
     kernel_regularizer_vector = [None]
     early_stopping = 25
-    data_path = "PialNet_data/TF_records_20210112_141733/"
+    data_path = "PialNet_data/TF_records_20210112_231535/"
 
     for n_layers in n_layers_vector:
         for lr in lr_vector:
