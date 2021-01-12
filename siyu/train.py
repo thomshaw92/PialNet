@@ -62,6 +62,8 @@ if __name__ == "__main__":
     m = Model(5, 50).cuda()
     opt = torch.optim.Adam(m.parameters(), lr=0.001)
     losses = []
+    sys.stdout = open('tmp/out.log', 'w+')
+    sys.stderr = open('tmp/out.err', 'w+')
     for i in range(10000):
         xp, yp = next(g)
         opt.zero_grad()
@@ -72,3 +74,5 @@ if __name__ == "__main__":
         losses.append(loss.cpu().detach().numpy())
         print(i, np.mean(losses[-50:]))
         sys.stdout.flush()
+        torch.save(m.state_dict(), 'tmp/model.pth')
+
