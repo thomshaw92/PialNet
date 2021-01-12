@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "train.py", line 67, in <module>
+    xp, yp = get_patch(x, y)
+NameError: name 'x' is not defined
