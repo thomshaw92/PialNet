@@ -14,6 +14,9 @@ https://cloudstor.aarnet.edu.au/plus/s/e4NVp4aU6JYiNAv
 ## Training data examples and validation sample can be found here:
 https://cloudstor.aarnet.edu.au/plus/s/o6yxfKA4rBrKNip
 
+## The corresponding paper can be found here 
+https://www.frontiersin.org/articles/10.3389/fnins.2020.592352/full
+
 NB: we cannot provide validation data, but we can show examples and run code on the data on Wiener
 
 ## Full training data:
