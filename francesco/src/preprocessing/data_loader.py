@@ -36,7 +36,7 @@ def create_TF_records(data_path):
 
                 assert (len(x_patches) == len(y_patches))
                 for k in range(len(x_patches)):
-                    data.append({"x": np.float32(np.expand_dims(x_patches[i], -1)), "y": np.float32(y_patches[i])})
+                    data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
 
             elif "test" in data_purpose:
                 x = np.pad(x, [(28, 27), (3, 2), (38, 38)], 'constant')
