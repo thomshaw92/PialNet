@@ -63,13 +63,12 @@ if __name__ == "__main__":
     opt = torch.optim.Adam(m.parameters(), lr=0.001)
     losses = []
     for i in range(10000):
+        xp, yp = next(g)
         opt.zero_grad()
-        xp, yp = get_patch(x, y)
-        yp = torch.tensor(yp).cuda()
-        o = m(torch.tensor(xp.astype('float32')).cuda())
+        o = m(xp)
         loss = F.binary_cross_entropy_with_logits(o, yp)
         loss.backward()
         opt.step()
         losses.append(loss.cpu().detach().numpy())
-        print(i, losses[-50:])
+        print(i, np.mean(losses[-50:]))
         sys.stdout.flush()

@@ -9,4 +9,4 @@
 #SBATCH --output="tmp/logs/%j.out"
 
 source /scratch/itee/uqsliu23/miniconda3/bin/activate /scratch/itee/uqsliu23/torch
-python3.8 train_seg_count.py
+python3.8 train.py
