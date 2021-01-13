@@ -11,11 +11,20 @@ import sys
 from models import *
 from utils import *
 
-OUT_DIR = 'tmp/experiment2_aspp'
+OUT_DIR = 'tmp/experiment2_aspp_aug'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 10000
 PATCH_SIZE = 50
+
+DATA2 = '/afm02/Q3/Q3503/synthetic/aug'
+DATA = '/afm02/Q3/Q3503/synthetic/raw'
+SEG = '/afm02/Q3/Q3503/synthetic/seg'
+
+
+
+
+
 
 if __name__ == "__main__":
     # set up dirs... WARNING: will delete everything 
@@ -25,7 +34,9 @@ if __name__ == "__main__":
     xt = nib.load(XT).get_fdata()
     yt = nib.load(YT).get_fdata()
 
-    g = data_gen(DATA, SEG, patch_size=PATCH_SIZE)
+    g1 = data_gen(DATA, SEG, patch_size=PATCH_SIZE)
+    g2 = data_gen(DATA2, SEG, patch_size=PATCH_SIZE)
+    gs = [g1, g2]
     m = Model(5, PATCH_SIZE).cuda()
     # OPTIONAL, load weights
     # m.load_state_dict(torch.load('tmp/model.pth'))
@@ -39,6 +50,7 @@ if __name__ == "__main__":
     # pip stderr to a file
     sys.stderr = open(os.path.join(OUT_DIR, 'err.log'), 'w+')
     for i in range(N_STEPS): # train for 10k steps
+        g = random.choices(gs) # choose randomly from aug and raw
         # training step: single iteration of backprop
         xp, yp = next(g)
         opt.zero_grad()
