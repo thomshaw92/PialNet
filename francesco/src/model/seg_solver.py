@@ -40,16 +40,20 @@ class Solver:
 
     def iterate_dataset(self, network, dataset, mode, n_epoch):
 
+        iterations = 0
         for batch in dataset:
+            iterations += 1
             # One-hot encoding
             y = tf.keras.utils.to_categorical(tf.cast(batch["y"], tf.int32), self.params["out_ch"])
 
             if "train" in mode:
-                predictions, metrics = self.train_step(network, batch["x"], y, mode)
+                predictions, metrics = self.train_step(network, batch["x"], y)
             else:
-                predictions, metrics = self.test_step(network, batch["x"], y, mode)
-
+                predictions, metrics = self.test_step(network, batch["x"], y)
             self.tb_manager.update_metrics(metrics)
+
+            if iterations >= 50:
+                break
 
         epoch_metrics = self.tb_manager.get_current_metrics()
         self.tb_manager.write_summary(mode, n_epoch, {"x": batch["x"], "y": tf.expand_dims(batch["y"], -1), "pred": predictions})
@@ -60,10 +64,10 @@ class Solver:
         return epoch_metrics
 
     @tf.function
-    def train_step(self, network, x, y, mode):
+    def train_step(self, network, x, y):
 
         with tf.GradientTape() as tape:
-            logits = network(x, training=True, mode=mode)
+            logits = network(x, training=True)
             dice_scores_by_class = self.loss_manager.dice_score_from_logits(y, logits)
             loss = self.loss_manager.metrics[self.params["loss"]](y, logits)
 
@@ -73,8 +77,8 @@ class Solver:
         return misc.get_argmax_prediction(logits), {"loss": loss, "dice_score_by_class": dice_scores_by_class}
 
     @tf.function
-    def test_step(self, network, x, y, mode):
-        logits = network(x, training=False, mode=mode)
+    def test_step(self, network, x, y):
+        logits = network(x, training=False)
 
         if y is None:
             return misc.get_argmax_prediction(logits)
