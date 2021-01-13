@@ -52,7 +52,7 @@ class Solver:
                 predictions, metrics = self.test_step(network, batch["x"], y)
             self.tb_manager.update_metrics(metrics)
 
-            if iterations >= 50:
+            if iterations >= 500:
                 break
 
         epoch_metrics = self.tb_manager.get_current_metrics()

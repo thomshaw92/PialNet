@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     n_layers_vector = [5]
     lr_vector = [3e-4]
-    batch_norm_vector = [False]
+    batch_norm_vector = [True]
     dropout_vector = [0.]
     batch_size_vector = [1]
     k_size_vector = [3]
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     kernel_initializer_vector = ["he_normal"]
     kernel_regularizer_vector = [None]
     early_stopping = 25
-    data_path = "PialNet_data/TF_records_20210113_114136/"
+    data_path = "PialNet_data/TF_records_20210113_154202/"
 
     for n_layers in n_layers_vector:
         for lr in lr_vector:
