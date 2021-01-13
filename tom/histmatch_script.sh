@@ -21,7 +21,7 @@ for x in {1..13} ; do
 		echo "Validation sample ${x} with source image ${file} goes to output: ${count}.nii.gz" >> ${output_dir}/histmatch_log.txt 
 		singularity exec ${output_dir}/ants_2.3.4_latest.sif ImageMath 3 ${output_dir}/augmented_histmatched_${count}.nii.gz HistogramMatch ${source_image_folder}/${file} ${reference_image_folder}/${x}.nii.gz 
 		ls ${seg_dir_input}/${file}
-		cp ${seg_dir_input}/${file} ${seg_dir_output}/${x}.nii.gz
+		cp ${seg_dir_input}/${file} ${seg_dir_output}/${count}.nii.gz
 		echo ${count}
 	let "count++"
 	done
