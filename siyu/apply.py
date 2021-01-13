@@ -31,19 +31,17 @@ if __name__ == "__main__":
     # OPTIONAL, load weights
     m.load_state_dict(torch.load('tmp/model.pth'))  
 
-        # apply
-            m.eval()
-            for i in range(5):
-                xp_save, yp = get_patch(xt, yt)
-                xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0)
-                pred = m(xp)
-                pred = torch.sigmoid(pred)
-                arr = pred[0][0].cpu().detach().numpy()
-                save_as_nifti(xp_save[0], os.path.join(OUT_DIR, 'pred'), '%d_x.nii.gz'% i)
-                save_as_nifti(arr, os.path.join(OUT_DIR, 'pred'), '%d_pred.nii.gz'% i)
-                save_as_nifti(np.round(arr), os.path.join(OUT_DIR, 'pred'), '%d_pred_rounded.nii.gz'% i)
-                save_as_nifti(yp[0], os.path.join(OUT_DIR, 'pred'), '%d_y.nii.gz'% i)
-            m.train()
-        
-
+    # apply
+    m.eval()
+    for i in range(5):
+        xp_save, yp = get_patch(xt, yt)
+        xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0)
+        pred = m(xp)
+        pred = torch.sigmoid(pred)
+        arr = pred[0][0].cpu().detach().numpy()
+        save_as_nifti(xp_save[0], os.path.join(OUT_DIR, 'pred'), '%d_x.nii.gz'% i)
+        save_as_nifti(arr, os.path.join(OUT_DIR, 'pred'), '%d_pred.nii.gz'% i)
+        save_as_nifti(np.round(arr), os.path.join(OUT_DIR, 'pred'), '%d_pred_rounded.nii.gz'% i)
+        save_as_nifti(yp[0], os.path.join(OUT_DIR, 'pred'), '%d_y.nii.gz'% i)
+    
 
