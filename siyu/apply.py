@@ -6,15 +6,15 @@ import nibabel as nib
 import numpy as np
 import os
 import random
-# import scanf
+import scanf
 import sys
 from models import *
 from utils import *
 from losses import compute_per_channel_dice
 
 OUT_DIR = 'tmp/experiment2_aspp_dsc'
-XT = 'tmp/imageData.nii'
-YT = 'tmp/segmentationData.nii'
+XT = '/afm02/Q3/Q3461/data/MRA_P11/bias_correction_corrected/TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_21_biasCor_zipCor.nii'
+YT = '/afm02/Q3/Q3461/data/MRA_P11/vessel_segmentation_intensity/seg_TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_21_biasCor_zipCor_H375_L250_C5.nii'
 N_STEPS = 10000
 PATCH_SIZE = 50
 
@@ -27,13 +27,17 @@ USE_DSC = True
 
 if __name__ == "__main__":
 
+    # load data
+    xt = nib.load(XT).get_fdata()
+    yt = nib.load(YT).get_fdata()
+
     m = Model(5, PATCH_SIZE)
-    # OPTIONAL, load weights
-    m.load_state_dict(torch.load('tmp/model.pth'))  
+    #load weights
+    m.load_state_dict(torch.load('/afm02/Q3/Q3503/synthetic/checkpoints/model.pth', map_location={'cuda:0': 'cpu'}))  
 
     # apply
     m.eval()
-    for i in range(5):
+    for i in range(50):
         xp_save, yp = get_patch(xt, yt)
         xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0)
         pred = m(xp)
