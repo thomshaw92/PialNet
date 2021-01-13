@@ -12,21 +12,13 @@ from models import *
 from utils import *
 from losses import compute_per_channel_dice
 
-OUT_DIR = 'tmp/experiment2_aspp_dsc'
+OUT_DIR = 'tmp/experiment2_aspp_hist'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 10000
 PATCH_SIZE = 50
 
-DATA2 = '/afm02/Q3/Q3503/synthetic/aug'
-DATA = '/afm02/Q3/Q3503/synthetic/raw'
-SEG = '/afm02/Q3/Q3503/synthetic/seg'
-
-USE_DSC = True
-
-
-
-
+USE_DSC = False
 
 
 if __name__ == "__main__":
@@ -38,8 +30,15 @@ if __name__ == "__main__":
     yt = nib.load(YT).get_fdata()
 
     gs = [
-        data_gen(DATA, SEG, patch_size=PATCH_SIZE),
-        # data_gen(DATA2, SEG, patch_size=PATCH_SIZE) # augmented data (optional)
+        # data_gen(
+        #     '/afm02/Q3/Q3503/synthetic/raw', 
+        #     '/afm02/Q3/Q3503/synthetic/seg', 
+        #     patch_size=PATCH_SIZE),
+        data_gen_hist(
+            '/afm02/Q3/Q3503/synthetic/histmatched_aug', 
+            '/afm02/Q3/Q3503/synthetic/histmatched_aug_seg', 
+            patch_size=PATCH_SIZE, 
+            norm=False)
     ]
     m = Model(5, PATCH_SIZE).cuda()
     # OPTIONAL, load weights
@@ -61,7 +60,7 @@ if __name__ == "__main__":
         o = m(xp)
         loss = F.binary_cross_entropy_with_logits(o, yp)
         if USE_DSC:
-            loss += (1 - compute_per_channel_dice(o, yp).mean())
+            loss += (1 - compute_per_channel_dice(o, yp).mean)
         loss.backward()
         opt.step()
         losses.append(loss.cpu().detach().numpy())
