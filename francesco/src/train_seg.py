@@ -53,7 +53,7 @@ if __name__ == "__main__":
     kernel_initializer_vector = ["he_normal"]
     kernel_regularizer_vector = [None]
     early_stopping = 25
-    data_path = "PialNet_data/TF_records_20210112_231535/"
+    data_path = "PialNet_data/TF_records_20210112_232013/"
 
     for n_layers in n_layers_vector:
         for lr in lr_vector:
