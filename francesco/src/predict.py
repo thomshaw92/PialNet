@@ -27,7 +27,12 @@ def main(ckp_path, ckp_name, input_path, label_path, threshold):
         pred, metrics = slv.test_step(network, np.copy(x) / float(threshold), y)
         print(threshold, metrics)
     else:
-        pred = slv.test_step(network, np.copy(x) / float(threshold), y)
+        x = x / float(threshold)
+        pred = np.zeros_like(x)
+
+        for j in range(0, x.shape[1], 128):
+            for k in range(0, x.shape[2], 128):
+                pred[:, j:j + 128, k:k + 128, :, :] = slv.test_step(network, x[:, j:j + 128, k:k + 128, :, :], y)
 
     pred = pred[0, pad[0][0]:-pad[0][1], pad[1][0]:-pad[1][1], pad[2][0]:-pad[2][1], 0]
     file_name = base_path + ckp_path + str(input_path.split("/")[-1].split(".")[0]) + "-" + ckp_name + "-" + str(threshold) + ".nii.gz"

@@ -13,12 +13,11 @@ module load cuda/10.0.130
 module load gnu7
 module load openmpi3
 module load anaconda/3.6
-#source activate /opt/ohpc/pub/apps/tensorflow_2.0.0
-source activate /clusterdata/uqfcogno/.conda/envs/TF_2_3_0
+source activate /opt/ohpc/pub/apps/tensorflow_2.0.0
 
 task="unlabelled"
 
-if [ "$task" = "labelled" ]; then
+if [ "$task" = "unlabelled" ]; then
   for folders in PialNet_data/bias_correction_corrected/ PialNet_data/bias_correction/
   do
     for filename in $folders*;
@@ -28,7 +27,7 @@ if [ "$task" = "labelled" ]; then
       exit 1
     done
   done
-elif [ "$task" = "unlabelled" ]; then
+elif [ "$task" = "labelled" ]; then
   python3 src/predict.py --ckp_path checkpoints/SEG-ckp_20210113_160549/ --ckp_name epoch-44 --threshold 600 --input_path PialNet_data/test/raw/imageData.nii \
           --label_path PialNet_data/test/seg/segmentationData.nii
 else
