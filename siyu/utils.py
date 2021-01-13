@@ -27,7 +27,9 @@ def get_patch(img, seg, size=50):
     l2, u2 = s2
     l3, u3 = s3
     imgp, segp = img[l1:u1, l2:u2, l3:u3], seg[l1:u1, l2:u2, l3:u3]
-    return ((imgp - imgp.mean()) / imgp.std()) [None, ...], segp[None, ...]
+    imgp = imgp[None, ...]
+    segp = segp[None, ...]
+    return (imgp - imgp.mean()) / imgp.std(), segp
 
 
 DATA = '/afm02/Q3/Q3503/synthetic/raw'

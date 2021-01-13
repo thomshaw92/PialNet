@@ -11,7 +11,7 @@ import sys
 from models import *
 from utils import *
 
-OUT_DIR = 'tmp/experiment1'
+OUT_DIR = 'tmp/experiment2_aspp'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 100
@@ -41,6 +41,7 @@ if __name__ == "__main__":
     sys.stderr = open(os.path.join(OUT_DIR, 'err.log'), 'w+')
     for i in range(N_STEPS): # train for 10k steps
         # training step: single iteration of backprop
+        m.train()
         xp, yp = next(g)
         opt.zero_grad()
         o = m(xp)
@@ -54,11 +55,12 @@ if __name__ == "__main__":
         # eval and save every 50 steps
         if i % 50 == 0: 
             torch.save(m.state_dict(), os.path.join(OUT_DIR, 'model.pth')) # save model weights
+            m.eval()
             for i in range(10000):
                 xp_save, yp = get_patch(xt, yt)
                 xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0).cuda()
                 pred = m(xp)
-                pred = F.sigmoid(pred)
+                pred = torch.sigmoid(pred)
                 arr = pred[0][0].cpu().detach().numpy()
                 save_as_nifti(xp_save[0], os.path.join(OUT_DIR, 'pred'), '%d_x.nii.gz'% i)
                 save_as_nifti(arr, os.path.join(OUT_DIR, 'pred'), '%d_pred.nii.gz'% i)
