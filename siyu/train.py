@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # pip stderr to a file
     sys.stderr = open(os.path.join(OUT_DIR, 'err.log'), 'w+')
     for i in range(N_STEPS): # train for 10k steps
-        g = random.choices(gs) # choose randomly from aug and raw
+        g = random.choice(gs) # choose randomly from aug and raw
         # training step: single iteration of backprop
         xp, yp = next(g)
         opt.zero_grad()
