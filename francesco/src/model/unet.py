@@ -5,18 +5,13 @@ from tf_utils.blocks.cnn_block import CNN
 
 class UNet(tf.keras.Model):
     def __init__(self, n_classes, n_layers, starting_filters, k_size, init, batch_norm, dropout, activation, conv_per_layer, max_pool,
-                 upsampling, kernel_regularizer, modes, max_n_filters=512, is_predicting=False):
+                 upsampling, kernel_regularizer, max_n_filters=512):
         super(UNet, self).__init__()
 
         self.n_layers = n_layers
         self.conv_per_layer = conv_per_layer
         self.max_pool = max_pool
         self.upsampling = upsampling
-
-        # Normalization layer
-        self.normalizers = dict()
-        for mode in modes:
-            self.normalizers[mode] = tf.keras.layers.experimental.preprocessing.Normalization()
 
         if kernel_regularizer is not None:
             if kernel_regularizer[0] == "L1":
@@ -58,9 +53,7 @@ class UNet(tf.keras.Model):
 
         self.last_conv = CNN(n_classes, 3, kernel_initializer=init, batch_norm=None, dropout=0., activation=None)
 
-    def call(self, x, training, mode):
-
-        # x = self.normalizers[mode](x)
+    def call(self, x, training):
 
         skips = []
         for i in range(self.n_layers):
@@ -87,12 +80,12 @@ class UNet(tf.keras.Model):
 
         return self.last_conv(x)
 
-    def summary(self, input_shape, mode):
+    def summary(self, input_shape):
         """
         :param input_shape: (32, 32, 1)
         """
         x = tf.keras.Input(shape=input_shape)
-        model = tf.keras.Model(inputs=[x], outputs=self.call(x, training=False, mode=mode))
+        model = tf.keras.Model(inputs=[x], outputs=self.call(x, training=False))
         tf.keras.utils.plot_model(model, to_file='UNet.png', show_shapes=True, expand_nested=True)
         model.summary(line_length=200)
 
