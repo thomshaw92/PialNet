@@ -1,7 +1,5 @@
 import tensorflow as tf
 import copy
-import matplotlib.pyplot as plt
-import numpy as np
 
 from tf_utils import Tensorboard, MetricsManager, misc
 
@@ -39,21 +37,6 @@ class Solver:
             best_metrics[mode] = copy.deepcopy(metrics)
 
         return best_metrics, Tensorboard(self.ckp_path, metrics, modes)
-
-    def plot_figures(self, ante, **kwargs):
-        """ misc.plot_figures('Prepend text', x=f_batch, y=y_batch) """
-
-        for key, value in kwargs.items():
-            for i in range(len(value)):
-                if len(value.shape) == 4:
-                    value = np.expand_dims(np.array(value), -1)
-
-                plt.figure()
-                # plt.imshow(value[i][:, :, value[i].shape[-2] // 2, 0], cmap="gray")
-                plt.imshow(value[i][60, :, :, 0], cmap="gray")
-                plt.colorbar()
-                plt.title(str(ante) + " : " + key + "_" + str(i))
-        plt.show()
 
     def iterate_dataset(self, network, dataset, mode, n_epoch):
 
