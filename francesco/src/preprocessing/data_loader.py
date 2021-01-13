@@ -9,18 +9,22 @@ def create_TF_records(data_path):
     base_path = misc.get_base_path(training=False)
 
     TFManager = TFRecordsManager()
-    data_purposes = ["train", "val", "test"]
+    data_purposes = ["train", "val"]
+    data_purposes += ["test-" + str(threshold) for threshold in range(400, 1000, 100)]
     params = {"data_purposes": data_purposes, "data_keys": {"x": "float32", "y": "float32"}}
 
     TFRecords_path = misc.create_TF_records_folder(base_path + data_path, data_purposes)
     misc.save_json(TFRecords_path + "params.json", params)
 
     for data_purpose in data_purposes:
-        x_files = glob.glob(base_path + data_path + data_purpose + "/raw/*")
-        y_files = glob.glob(base_path + data_path + data_purpose + "/seg/*")
+        if "test" not in data_purpose:
+            x_files = glob.glob(base_path + data_path + data_purpose + "/raw/*")
+            y_files = glob.glob(base_path + data_path + data_purpose + "/seg/*")
+        else:
+            x_files = glob.glob(base_path + data_path + "test/raw/*")
+            y_files = glob.glob(base_path + data_path + "test/seg/*")
         x_files.sort()
         y_files.sort()
-
         assert (len(x_files) == len(y_files))
         data = []
         for i in range(len(x_files)):
@@ -42,9 +46,7 @@ def create_TF_records(data_path):
             elif "test" in data_purpose:
                 x = np.pad(x, [(28, 27), (3, 2), (38, 38)], 'constant')
                 y = np.pad(y, [(28, 27), (3, 2), (38, 38)], 'constant')
-                #data.append({"x": np.float32(np.expand_dims(x, -1)), "y": np.float32(y)})
-                for threshold in range(100, 2000, 100):
-                    data.append({"x": np.float32(np.expand_dims((np.copy(x) / float(threshold)), -1)), "y": np.float32(y)})
+                data.append({"x": np.float32(np.expand_dims((np.copy(x) / float(data_purpose.split("-")[1])), -1)), "y": np.float32(y)})
             else:
                 raise NotImplementedError(data_purpose)
 
