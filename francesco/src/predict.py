@@ -25,19 +25,20 @@ def main(ckp_path, ckp_name, input_path, label_path):
 
     # Save NII file
     y = tf.keras.utils.to_categorical(tf.cast(y, tf.int32), params["out_ch"])
-    for threshold in range(100, 2000, 100):
+    for threshold in range(400, 1000, 100):
         predictions, metrics = slv.test_step(network, np.copy(x) / float(threshold), y)
         print(threshold, metrics)
-        nib.save(nib.Nifti1Image(predictions[0, 28:-27, 3:-2, 38:-38, 0], affine, header), base_path + ckp_path + str(input_path.split("/")[-1][:-7]) + "-" + ckp_name + "-"
-                 + str(threshold) + ".nii.gz")
+        nib.save(nib.Nifti1Image(predictions[0, 28:-27, 3:-2, 38:-38, 0], affine, header), base_path + ckp_path + str(input_path.split("/")[-1][:-7]) + "-" +
+                 ckp_name + "-" + str(threshold) + ".nii.gz")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--ckp_path", type=str, required=True)
-    parser.add_argument("--ckp_name", type=str, required=True)
     parser.add_argument("--input_path", type=str, required=True)
     parser.add_argument("--label_path", type=str, required=True)
     args = parser.parse_args()
 
-    main(args.ckp_path, args.ckp_name, args.input_path, args.label_path)
+    for ckp_name in ["epoch-10"]:
+        print("\n\n", ckp_name)
+        main(args.ckp_path, ckp_name, args.input_path, args.label_path)
