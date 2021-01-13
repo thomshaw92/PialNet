@@ -25,9 +25,10 @@ def main(ckp_path, ckp_name, input_path, label_path):
 
     # Save NII file
     for threshold in range(100, 2000, 100):
-        predictions, metrics = slv.test_step(network, np.copy(x) / float(threshold), np.float32(y))
-        print(metrics)
-        nib.save(nib.Nifti1Image(predictions[0, :, :, :, 0], affine, header), base_path + ckp_path + str(input_path.split("/")[-1][:-7]) + "-" + ckp_name + "-"
+        y = tf.keras.utils.to_categorical(tf.cast(y, tf.int32), params["out_ch"])
+        predictions, metrics = slv.test_step(network, np.copy(x) / float(threshold), y)
+        print(threshold, metrics)
+        nib.save(nib.Nifti1Image(predictions[0, 28:-27, 3:-2, 38:-38, 0], affine, header), base_path + ckp_path + str(input_path.split("/")[-1][:-7]) + "-" + ckp_name + "-"
                  + str(threshold) + ".nii.gz")
 
 
