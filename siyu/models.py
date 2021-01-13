@@ -48,7 +48,7 @@ class Model(nn.Module):
         self.size = size
         self.conv_in = nn.Conv3d(1, 32, 1)
         self.bn_in = nn.BatchNorm3d(32)
-        self.convs = nn.ModuleList([\
+        self.convs = nn.ModuleList([
             torch.nn.Conv3d(32, 32, 3, padding=1) for _ in range(n_layers)
         ])
         self.bns = nn.ModuleList([
@@ -67,7 +67,7 @@ class Model(nn.Module):
         for l, bn in zip(self.convs, self.bns):
             x = l(x)
             x = bn(x)
-            x = torch.leaky_relu(x)
+            x = F.leaky_relu(x)
         x = self.aspp(x)
         x = self.conv_out(x)
         return x
