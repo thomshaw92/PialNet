@@ -9,70 +9,80 @@ import random
 import scanf
 import sys
 from models import *
+from utils import *
+from losses import compute_per_channel_dice
 
-def get_patch(img, seg, size=50):
-    def rand_seg(d, l):
-        lower = 0
-        upper = d - l
-        idx = random.randint(lower, upper)
-        idx = random.randint(lower, upper)
-        return idx, idx + l
-    d1, d2, d3 = img.shape
-    s1, s2, s3 = [rand_seg(d, size) for d in [d1, d2, d3]]
-    l1, u1 = s1
-    l2, u2 = s2
-    l3, u3 = s3
-    imgp, segp = img[l1:u1, l2:u2, l3:u3], seg[l1:u1, l2:u2, l3:u3]
-    return (imgp - imgp.mean())[None, ...] / imgp.std(), segp[None, ...]
+OUT_DIR = 'tmp/experiment2_aspp_dsc'
+XT = 'tmp/imageData.nii'
+YT = 'tmp/segmentationData.nii'
+N_STEPS = 10000
+PATCH_SIZE = 50
 
-
+DATA2 = '/afm02/Q3/Q3503/synthetic/aug'
 DATA = '/afm02/Q3/Q3503/synthetic/raw'
 SEG = '/afm02/Q3/Q3503/synthetic/seg'
 
-def data_gen(data_dir, seg_dir, images_per_batch=1, patches_per_img=4, patch_size=50):
-    data_files = os.listdir(data_dir)
-    cases = {}
-    for f in data_files:
-        case_num = scanf.scanf('%d.nii.gz', f)[0]
-        cases[case_num] = [os.path.join(data_dir, f)]
+USE_DSC = True
 
-    seg_files = os.listdir(seg_dir)
-    for f in seg_files:
-        case_num = scanf.scanf('%d.nii.gz', f)[0]
-        cases[case_num].append(os.path.join(seg_dir, f))
-        assert len(cases[case_num]) == 2
-    
-    data = list(cases.values())
-    while True:
-        batch = random.choices(data, k=images_per_batch)
-        xb, yb = [], []
-        for x, y in batch:
-            x = nib.load(x).get_fdata()
-            y = nib.load(y).get_fdata()
-            for i in range(patches_per_img):         
-                xp, yp = get_patch(x, y, size=patch_size)
-                xb.append(xp)
-                yb.append(yp)
-        xb = np.array(xb).astype('float32')
-        yb = np.array(yb)
-        yield torch.tensor(xb).cuda(), torch.tensor(yb).cuda()
+
+
+
+
 
 if __name__ == "__main__":
-    g = data_gen(DATA, SEG)
-    m = Model(5, 50).cuda()
+    # set up dirs... WARNING: will delete everything 
+    force_create_empty_directory(OUT_DIR)
+    force_create_empty_directory(os.path.join(OUT_DIR, 'pred'))
+
+    xt = nib.load(XT).get_fdata()
+    yt = nib.load(YT).get_fdata()
+
+    gs = [
+        data_gen(DATA, SEG, patch_size=PATCH_SIZE),
+        # data_gen(DATA2, SEG, patch_size=PATCH_SIZE) # augmented data (optional)
+    ]
+    m = Model(5, PATCH_SIZE).cuda()
+    # OPTIONAL, load weights
+    # m.load_state_dict(torch.load('tmp/model.pth'))
+
     opt = torch.optim.Adam(m.parameters(), lr=0.001)
     losses = []
-    sys.stdout = open('tmp/out.log', 'w+')
-    sys.stderr = open('tmp/out.err', 'w+')
-    for i in range(10000):
+
+    # pipe stdout to a file
+    sys.stdout = open(os.path.join(OUT_DIR, 'out.log'), 'w+')
+
+    # pip stderr to a file
+    sys.stderr = open(os.path.join(OUT_DIR, 'err.log'), 'w+')
+    for i in range(N_STEPS): # train for 10k steps
+        g = random.choice(gs) # choose randomly from aug and raw
+        # training step: single iteration of backprop
         xp, yp = next(g)
         opt.zero_grad()
         o = m(xp)
         loss = F.binary_cross_entropy_with_logits(o, yp)
+        if USE_DSC:
+            loss += (1 - compute_per_channel_dice(o, yp).mean())
         loss.backward()
         opt.step()
         losses.append(loss.cpu().detach().numpy())
         print(i, np.mean(losses[-50:]))
-        sys.stdout.flush()
-        torch.save(m.state_dict(), 'tmp/model.pth')
+        sys.stdout.flush() # remember to flush the prints, else nothing is going to appear until job ends
+
+        # eval and save every 50 steps
+        if i % 50 == 0: 
+            torch.save(m.state_dict(), os.path.join(OUT_DIR, 'model.pth')) # save model weights
+            m.eval()
+            for i in range(5):
+                xp_save, yp = get_patch(xt, yt)
+                xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0).cuda()
+                pred = m(xp)
+                pred = torch.sigmoid(pred)
+                arr = pred[0][0].cpu().detach().numpy()
+                save_as_nifti(xp_save[0], os.path.join(OUT_DIR, 'pred'), '%d_x.nii.gz'% i)
+                save_as_nifti(arr, os.path.join(OUT_DIR, 'pred'), '%d_pred.nii.gz'% i)
+                save_as_nifti(np.round(arr), os.path.join(OUT_DIR, 'pred'), '%d_pred_rounded.nii.gz'% i)
+                save_as_nifti(yp[0], os.path.join(OUT_DIR, 'pred'), '%d_y.nii.gz'% i)
+            m.train()
+        
+
 

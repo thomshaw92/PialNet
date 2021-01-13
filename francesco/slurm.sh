@@ -3,7 +3,7 @@
 #SBATCH --job-name=PialNet
 #SBATCH -n 1
 #SBATCH -c 6
-#SBATCH --mem=150000
+#SBATCH --mem=50000
 #SBATCH -o out_wiener.txt
 #SBATCH -e error_wiener.txt
 #SBATCH --partition=gpu
