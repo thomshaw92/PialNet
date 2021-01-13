@@ -61,7 +61,7 @@ if __name__ == "__main__":
         o = m(xp)
         loss = F.binary_cross_entropy_with_logits(o, yp)
         if USE_DSC:
-            loss += (1 - compute_per_channel_dice(o, yp))
+            loss += (1 - compute_per_channel_dice(o, yp).mean())
         loss.backward()
         opt.step()
         losses.append(loss.cpu().detach().numpy())
