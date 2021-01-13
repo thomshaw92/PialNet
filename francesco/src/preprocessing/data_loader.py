@@ -31,17 +31,18 @@ def create_TF_records(data_path):
                 assert (x.max() == 255. and x.min() == 0. and y.max() == 1.0 and y.min() == 0.)
                 x = x / 255.
                 assert (x.max() == 1. and x.min() == 0.)
+
                 x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
                 y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
-
                 assert (len(x_patches) == len(y_patches))
+
                 for k in range(len(x_patches)):
                     data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
 
             elif "test" in data_purpose:
                 x = np.pad(x, [(28, 27), (3, 2), (38, 38)], 'constant')
                 y = np.pad(y, [(28, 27), (3, 2), (38, 38)], 'constant')
-
+                #data.append({"x": np.float32(np.expand_dims(x, -1)), "y": np.float32(y)})
                 for threshold in range(100, 2000, 100):
                     data.append({"x": np.float32(np.expand_dims((np.copy(x) / float(threshold)), -1)), "y": np.float32(y)})
             else:
