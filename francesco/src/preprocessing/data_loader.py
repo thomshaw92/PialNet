@@ -50,3 +50,17 @@ def create_TF_records(data_path):
 
         TFManager.save_record(TFRecords_path + data_purpose + "/0", data)
         del data
+
+
+def load_testing_volume(base_path, input_path, label_path):
+    input_volume = nib.load(base_path + input_path)
+    x = input_volume.get_fdata()
+    x = np.pad(x, [(28, 27), (3, 2), (38, 38)], 'constant')
+
+    x = np.float32(np.array([np.expand_dims(x, -1)]))
+    assert (len(x.shape) == 5 and x.shape[0] == 1 and x.shape[-1] == 1)
+
+    y = np.pad(nib.load(base_path + label_path).get_fdata(), [(28, 27), (3, 2), (38, 38)], 'constant')
+    y = np.float32(np.array([np.expand_dims(y, -1)]))
+
+    return x, y, input_volume.affine, input_volume.header
