@@ -10,8 +10,9 @@ import scanf
 import sys
 from models import *
 from utils import *
+from losses import compute_per_channel_dice
 
-OUT_DIR = 'tmp/experiment2_aspp_aug'
+OUT_DIR = 'tmp/experiment2_aspp_dsc'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 10000
@@ -20,6 +21,8 @@ PATCH_SIZE = 50
 DATA2 = '/afm02/Q3/Q3503/synthetic/aug'
 DATA = '/afm02/Q3/Q3503/synthetic/raw'
 SEG = '/afm02/Q3/Q3503/synthetic/seg'
+
+USE_DSC = True
 
 
 
@@ -34,9 +37,10 @@ if __name__ == "__main__":
     xt = nib.load(XT).get_fdata()
     yt = nib.load(YT).get_fdata()
 
-    g1 = data_gen(DATA, SEG, patch_size=PATCH_SIZE)
-    g2 = data_gen(DATA2, SEG, patch_size=PATCH_SIZE)
-    gs = [g1, g2]
+    gs = [
+        data_gen(DATA, SEG, patch_size=PATCH_SIZE),
+        # data_gen(DATA2, SEG, patch_size=PATCH_SIZE) # augmented data (optional)
+    ]
     m = Model(5, PATCH_SIZE).cuda()
     # OPTIONAL, load weights
     # m.load_state_dict(torch.load('tmp/model.pth'))
@@ -56,6 +60,8 @@ if __name__ == "__main__":
         opt.zero_grad()
         o = m(xp)
         loss = F.binary_cross_entropy_with_logits(o, yp)
+        if USE_DSC:
+            loss += (1 - compute_per_channel_dice(o, yp))
         loss.backward()
         opt.step()
         losses.append(loss.cpu().detach().numpy())
