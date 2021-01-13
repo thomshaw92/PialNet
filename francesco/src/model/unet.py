@@ -60,9 +60,9 @@ class UNet(tf.keras.Model):
 
     def call(self, x, training, mode):
 
-        x = self.normalizers[mode](x)
+        # x = self.normalizers[mode](x)
 
-        """skips = []
+        skips = []
         for i in range(self.n_layers):
 
             if self.max_pool and i != 0:
@@ -83,7 +83,7 @@ class UNet(tf.keras.Model):
                 x = self.decoder[i * (self.conv_per_layer + int(self.upsampling)) + j + int(self.upsampling)](x, training=training)
 
                 if j == 0 and self.upsampling is False:
-                    x = tf.keras.layers.Concatenate()([x, skips[i]])"""
+                    x = tf.keras.layers.Concatenate()([x, skips[i]])
 
         return self.last_conv(x)
 
