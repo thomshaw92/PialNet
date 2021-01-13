@@ -24,7 +24,6 @@ if [ "$task" = "unlabelled" ]; then
     do
       echo $filename
       python3 src/predict.py --ckp_path checkpoints/SEG-ckp_20210113_160549/ --ckp_name epoch-44 --threshold 600 --input_path $filename
-      exit 1
     done
   done
 elif [ "$task" = "labelled" ]; then
