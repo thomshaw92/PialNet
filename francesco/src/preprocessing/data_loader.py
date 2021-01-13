@@ -57,12 +57,26 @@ def create_TF_records(data_path):
 def load_testing_volume(base_path, input_path, label_path):
     input_volume = nib.load(base_path + input_path)
     x = input_volume.get_fdata()
-    x = np.pad(x, [(28, 27), (3, 2), (38, 38)], 'constant')
+
+    if "zipCor" in input_path:
+        assert(x.shape[0] == 1090 and x.shape[1] == 1277 and x.shape[2] == 52)
+        pad = [(31, 31), (2, 1), (38, 38)]
+        x = np.pad(x, pad, 'constant')
+    elif "biasCor.nii" in input_path:
+        assert (x.shape[0] == 1090 and x.shape[1] == 1280 and x.shape[2] == 52)
+        pad = [(31, 31), (0, 0), (38, 38)]
+        x = np.pad(x, pad, 'constant')
+    elif "imageData" in input_path:
+        pad = [(28, 27), (3, 2), (38, 38)]
+        x = np.pad(x, pad, 'constant')
 
     x = np.float32(np.array([np.expand_dims(x, -1)]))
     assert (len(x.shape) == 5 and x.shape[0] == 1 and x.shape[-1] == 1)
 
-    y = np.pad(nib.load(base_path + label_path).get_fdata(), [(28, 27), (3, 2), (38, 38)], 'constant')
-    y = np.float32(np.array([np.expand_dims(y, -1)]))
+    if label_path is not None:
+        y = np.pad(nib.load(base_path + label_path).get_fdata(), [(28, 27), (3, 2), (38, 38)], 'constant')
+        y = np.float32(np.array([np.expand_dims(y, -1)]))
+    else:
+        y = None
 
-    return x, y, input_volume.affine, input_volume.header
+    return x, y, input_volume.affine, input_volume.header, pad
