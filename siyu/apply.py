@@ -6,7 +6,7 @@ import nibabel as nib
 import numpy as np
 import os
 import random
-import scanf
+# import scanf
 import sys
 from models import *
 from utils import *
