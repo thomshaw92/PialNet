@@ -24,8 +24,8 @@ def main(ckp_path, ckp_name, input_path, label_path):
     slv = seg_solver.Solver(None, params, ["predicting"])
 
     # Save NII file
+    y = tf.keras.utils.to_categorical(tf.cast(y, tf.int32), params["out_ch"])
     for threshold in range(100, 2000, 100):
-        y = tf.keras.utils.to_categorical(tf.cast(y, tf.int32), params["out_ch"])
         predictions, metrics = slv.test_step(network, np.copy(x) / float(threshold), y)
         print(threshold, metrics)
         nib.save(nib.Nifti1Image(predictions[0, 28:-27, 3:-2, 38:-38, 0], affine, header), base_path + ckp_path + str(input_path.split("/")[-1][:-7]) + "-" + ckp_name + "-"
