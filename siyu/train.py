@@ -14,7 +14,7 @@ from utils import *
 OUT_DIR = 'tmp/experiment2_aspp'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
-N_STEPS = 100
+N_STEPS = 10000
 PATCH_SIZE = 50
 
 if __name__ == "__main__":
@@ -27,7 +27,6 @@ if __name__ == "__main__":
 
     g = data_gen(DATA, SEG, patch_size=PATCH_SIZE)
     m = Model(5, PATCH_SIZE).cuda()
-
     # OPTIONAL, load weights
     # m.load_state_dict(torch.load('tmp/model.pth'))
 
@@ -41,7 +40,6 @@ if __name__ == "__main__":
     sys.stderr = open(os.path.join(OUT_DIR, 'err.log'), 'w+')
     for i in range(N_STEPS): # train for 10k steps
         # training step: single iteration of backprop
-        m.train()
         xp, yp = next(g)
         opt.zero_grad()
         o = m(xp)
@@ -66,6 +64,7 @@ if __name__ == "__main__":
                 save_as_nifti(arr, os.path.join(OUT_DIR, 'pred'), '%d_pred.nii.gz'% i)
                 save_as_nifti(np.round(arr), os.path.join(OUT_DIR, 'pred'), '%d_pred_rounded.nii.gz'% i)
                 save_as_nifti(yp[0], os.path.join(OUT_DIR, 'pred'), '%d_y.nii.gz'% i)
+            m.train()
         
 
 
