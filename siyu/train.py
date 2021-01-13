@@ -56,7 +56,7 @@ if __name__ == "__main__":
         if i % 50 == 0: 
             torch.save(m.state_dict(), os.path.join(OUT_DIR, 'model.pth')) # save model weights
             m.eval()
-            for i in range(10000):
+            for i in range(5):
                 xp_save, yp = get_patch(xt, yt)
                 xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0).cuda()
                 pred = m(xp)
