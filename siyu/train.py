@@ -34,7 +34,7 @@ if __name__ == "__main__":
             '/afm02/Q3/Q3503/synthetic/raw', 
             '/afm02/Q3/Q3503/synthetic/seg', 
             patch_size=PATCH_SIZE,
-            norm=True)),
+            norm=True),
         data_gen_hist(
             '/afm02/Q3/Q3503/synthetic/histmatched_aug', 
             '/afm02/Q3/Q3503/synthetic/histmatched_aug_seg', 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
             '/afm02/Q3/Q3503/synthetic/aug', 
             '/afm02/Q3/Q3503/synthetic/aug_seg', 
             patch_size=PATCH_SIZE,
-            norm=True))
+            norm=True)
     ]
     m = Model(5, PATCH_SIZE).cuda()
     # OPTIONAL, load weights
