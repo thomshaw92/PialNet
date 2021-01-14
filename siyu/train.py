@@ -12,7 +12,7 @@ from models import *
 from utils import *
 from losses import compute_per_channel_dice
 
-OUT_DIR = 'tmp/experiment2_aspp_all_norm'
+OUT_DIR = 'tmp/experiment3_hist_norm_local'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 10000
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         o = m(xp)
         loss = F.binary_cross_entropy_with_logits(o, yp)
         if USE_DSC:
-            loss += (1 - compute_per_channel_dice(o, yp).mean)
+            loss += (1 - compute_per_channel_dice(o, yp).mean())
         loss.backward()
         opt.step()
         losses.append(loss.cpu().detach().numpy())

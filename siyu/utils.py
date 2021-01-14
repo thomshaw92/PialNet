@@ -9,7 +9,7 @@ import random
 import scanf
 import sys
 import shutil
-import cv2
+# import cv2
 
 def force_create_empty_directory(path):
     shutil.rmtree(path, ignore_errors=True)
@@ -20,6 +20,7 @@ def normalise(img):
     # return cv2.normalize(img, None, 0, 1, cv2.NORM_MINMAX)
 
 def get_patch(img, seg, size=50, norm=True):
+    img = normalise(img)
     def rand_seg(d, l):
         lower = 0
         upper = d - l
@@ -34,10 +35,28 @@ def get_patch(img, seg, size=50, norm=True):
     imgp, segp = img[l1:u1, l2:u2, l3:u3], seg[l1:u1, l2:u2, l3:u3]
     imgp = imgp[None, ...]
     segp = segp[None, ...]
-    if norm:
-        return normalise(imgp), segp
-    else:
-        return imgp, segp
+    return imgp, segp
+
+
+# def get_patch(img, seg, size=50, norm=True):
+#     def rand_seg(d, l):
+#         lower = 0
+#         upper = d - l
+#         idx = random.randint(lower, upper)
+#         idx = random.randint(lower, upper)
+#         return idx, idx + l
+#     d1, d2, d3 = img.shape
+#     s1, s2, s3 = [rand_seg(d, size) for d in [d1, d2, d3]]
+#     l1, u1 = s1
+#     l2, u2 = s2
+#     l3, u3 = s3
+#     imgp, segp = img[l1:u1, l2:u2, l3:u3], seg[l1:u1, l2:u2, l3:u3]
+#     imgp = imgp[None, ...]
+#     segp = segp[None, ...]
+#     if norm:
+#         return normalise(imgp), segp
+#     else:
+#         return imgp, segp
 
 
 def data_gen(data_dir, seg_dir, images_per_batch=1, patches_per_img=4, patch_size=50, norm=True):
