@@ -12,7 +12,7 @@ from models import *
 from utils import *
 from losses import compute_per_channel_dice
 
-OUT_DIR = 'tmp/experiment2_aspp_all'
+OUT_DIR = 'tmp/experiment2_aspp_all_norm'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 10000
@@ -34,7 +34,7 @@ if __name__ == "__main__":
             '/afm02/Q3/Q3503/synthetic/raw', 
             '/afm02/Q3/Q3503/synthetic/seg', 
             patch_size=PATCH_SIZE,
-            norm=True)),
+            norm=True),
         data_gen_hist(
             '/afm02/Q3/Q3503/synthetic/histmatched_aug', 
             '/afm02/Q3/Q3503/synthetic/histmatched_aug_seg', 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
             '/afm02/Q3/Q3503/synthetic/aug', 
             '/afm02/Q3/Q3503/synthetic/aug_seg', 
             patch_size=PATCH_SIZE,
-            norm=True))
+            norm=True)
     ]
     m = Model(5, PATCH_SIZE).cuda()
     # OPTIONAL, load weights
