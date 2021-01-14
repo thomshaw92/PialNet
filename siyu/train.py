@@ -12,7 +12,7 @@ from models import *
 from utils import *
 from losses import compute_per_channel_dice
 
-OUT_DIR = 'tmp/experiment2_aspp_all'
+OUT_DIR = 'tmp/experiment2_aspp_all_norm'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 10000
