@@ -78,7 +78,7 @@ if __name__ == "__main__":
             torch.save(m.state_dict(), os.path.join(OUT_DIR, 'model.pth')) # save model weights
             m.eval()
             for i in range(5):
-                xp_save, yp = get_patch(xt, yt, norm=True))
+                xp_save, yp = get_patch(xt, yt, norm=True)
                 xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0).cuda()
                 pred = m(xp)
                 pred = torch.sigmoid(pred)
