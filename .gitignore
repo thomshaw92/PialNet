@@ -35,6 +35,11 @@ MANIFEST
 *.manifest
 *.spec
 
+*.log
+*.pth
+*.out
+*.err
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -129,3 +134,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+*.nii
+tmp

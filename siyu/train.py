@@ -12,7 +12,7 @@ from models import *
 from utils import *
 from losses import compute_per_channel_dice
 
-OUT_DIR = 'tmp/experiment2_aspp_hist'
+OUT_DIR = 'tmp/experiment2_aspp_all'
 XT = 'tmp/imageData.nii'
 YT = 'tmp/segmentationData.nii'
 N_STEPS = 10000
@@ -30,15 +30,21 @@ if __name__ == "__main__":
     yt = nib.load(YT).get_fdata()
 
     gs = [
-        # data_gen(
-        #     '/afm02/Q3/Q3503/synthetic/raw', 
-        #     '/afm02/Q3/Q3503/synthetic/seg', 
-        #     patch_size=PATCH_SIZE),
+        data_gen(
+            '/afm02/Q3/Q3503/synthetic/raw', 
+            '/afm02/Q3/Q3503/synthetic/seg', 
+            patch_size=PATCH_SIZE,
+            norm=True)),
         data_gen_hist(
             '/afm02/Q3/Q3503/synthetic/histmatched_aug', 
             '/afm02/Q3/Q3503/synthetic/histmatched_aug_seg', 
             patch_size=PATCH_SIZE, 
-            norm=False)
+            norm=True),
+        data_gen(
+            '/afm02/Q3/Q3503/synthetic/aug', 
+            '/afm02/Q3/Q3503/synthetic/aug_seg', 
+            patch_size=PATCH_SIZE,
+            norm=True))
     ]
     m = Model(5, PATCH_SIZE).cuda()
     # OPTIONAL, load weights
@@ -72,7 +78,7 @@ if __name__ == "__main__":
             torch.save(m.state_dict(), os.path.join(OUT_DIR, 'model.pth')) # save model weights
             m.eval()
             for i in range(5):
-                xp_save, yp = get_patch(xt, yt)
+                xp_save, yp = get_patch(xt, yt, norm=True))
                 xp = torch.tensor(xp_save.astype('float32')).unsqueeze(0).cuda()
                 pred = m(xp)
                 pred = torch.sigmoid(pred)

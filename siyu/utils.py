@@ -9,10 +9,15 @@ import random
 import scanf
 import sys
 import shutil
+import cv2
 
 def force_create_empty_directory(path):
     shutil.rmtree(path, ignore_errors=True)
     os.makedirs(path)
+
+def normalise(img):
+    # return (img - img.mean()) / img.std()
+    return cv2.normalize(img, None, 0, 1, cv2.NORM_MINMAX)
 
 def get_patch(img, seg, size=50, norm=True):
     def rand_seg(d, l):
@@ -30,12 +35,12 @@ def get_patch(img, seg, size=50, norm=True):
     imgp = imgp[None, ...]
     segp = segp[None, ...]
     if norm:
-        return (imgp - imgp.mean()) / imgp.std(), segp
+        return normalise(imgp), segp
     else:
         return imgp, segp
 
 
-def data_gen(data_dir, seg_dir, images_per_batch=1, patches_per_img=4, patch_size=50):
+def data_gen(data_dir, seg_dir, images_per_batch=1, patches_per_img=4, patch_size=50, norm=True):
     data_files = os.listdir(data_dir)
     cases = {}
     for f in data_files:
@@ -56,7 +61,7 @@ def data_gen(data_dir, seg_dir, images_per_batch=1, patches_per_img=4, patch_siz
             x = nib.load(x).get_fdata()
             y = nib.load(y).get_fdata()
             for i in range(patches_per_img):         
-                xp, yp = get_patch(x, y, size=patch_size)
+                xp, yp = get_patch(x, y, size=patch_size, norm=norm)
                 xb.append(xp)
                 yb.append(yp)
         xb = np.array(xb).astype('float32')
