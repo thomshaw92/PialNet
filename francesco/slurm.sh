@@ -13,9 +13,7 @@ module load cuda/10.0.130
 module load gnu7
 module load openmpi3
 module load anaconda/3.6
-#source activate /opt/ohpc/pub/apps/tensorflow_2.0.0
-source activate /clusterdata/uqfcogno/.conda/envs/TF_2_3_0
+source activate /opt/ohpc/pub/apps/tensorflow_2.0.0
 
 #srun -n 1 python3 francesco/src/create_tf_records.py
-#srun -n 1 python3 francesco/src/train_seg.py
-srun -n 1 python3 francesco/src/predict.py --ckp_path checkpoints/SEG-ckp_20210113_124904/ --ckp_name epoch-25 --input_path PialNet_data/test/raw/imageData.nii --label_path PialNet_data/test/seg/segmentationData.nii
+srun -n 1 python3 francesco/src/train_seg.py
