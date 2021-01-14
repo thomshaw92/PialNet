@@ -16,8 +16,8 @@ def force_create_empty_directory(path):
     os.makedirs(path)
 
 def normalise(img):
-    # return (img - img.mean()) / img.std()
-    return cv2.normalize(img, None, 0, 1, cv2.NORM_MINMAX)
+    return (img - img.mean()) / img.std()
+    # return cv2.normalize(img, None, 0, 1, cv2.NORM_MINMAX)
 
 def get_patch(img, seg, size=50, norm=True):
     def rand_seg(d, l):
