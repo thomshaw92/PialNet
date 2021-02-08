@@ -3,7 +3,7 @@ import nibabel as nib
 import argparse
 import numpy as np
 
-from tf_utils import misc
+from tf_utils import misc, metrics
 from model import seg_solver, unet
 from preprocessing import data_loader
 
@@ -23,17 +23,17 @@ def main(ckp_path, ckp_name, input_path, label_path, threshold):
 
     slv = seg_solver.Solver(None, params, ["predicting"])
     if y is not None:
+        metrics_manager = metrics.MetricsManager()
+        y = tf.keras.utils.to_categorical(tf.cast(y, tf.int32))
         x = x / float(threshold)
         pred = np.zeros_like(x)
+        logits = np.zeros_like(x)
         
-        total_metrics = []
         for j in range(0, x.shape[1], 128):
             for k in range(0, x.shape[2], 128):
-                pred[:, j:j + 128, k:k + 128, :, :], metrics = slv.test_step(network, x[:, j:j + 128, k:k + 128, :, :], tf.keras.utils.to_categorical(tf.cast(y[:, j:j + 128, k:k + 128, :, :], tf.int32), params["out_ch"]))
-                if len(np.unique(y[:, j:j + 128, k:k + 128, :, :])) > 1:
-                	total_metrics.append(metrics["dice_score_by_class"][1].numpy())
-        print(total_metrics)
-        print(np.array(total_metrics).mean())
+                pred[:, j:j + 128, k:k + 128, :, :], metrics = slv.test_step(network, x[:, j:j + 128, k:k + 128, :, :], y[:, j:j + 128, k:k + 128, :, :], params["out_ch"])
+                logits[:, j:j + 128, k:k + 128, :, :] = network(x[:, j:j + 128, k:k + 128, :, :], training=False)
+        print(metrics_manager.metrics["DICEL"](y, logits))
     else:
         x = x / float(threshold)
         pred = np.zeros_like(x)
