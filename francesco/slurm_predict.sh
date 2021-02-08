@@ -15,7 +15,7 @@ module load openmpi3
 module load anaconda/3.6
 source activate /opt/ohpc/pub/apps/tensorflow_2.0.0
 
-task="unlabelled"
+task="labelled"
 
 if [ "$task" = "unlabelled" ]; then
   for folders in PialNet_data/bias_correction_corrected/ PialNet_data/bias_correction/
