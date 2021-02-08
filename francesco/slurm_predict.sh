@@ -27,8 +27,7 @@ if [ "$task" = "unlabelled" ]; then
     done
   done
 elif [ "$task" = "labelled" ]; then
-  python3 src/predict.py --ckp_path checkpoints/SEG-ckp_20210113_160549/ --ckp_name epoch-44 --threshold 600 --input_path PialNet_data/test/raw/imageData.nii \
-          --label_path PialNet_data/test/seg/segmentationData.nii
+  python3 src/predict.py --ckp_path checkpoints/SEG-ckp_20210113_160549/ --ckp_name epoch-44 --threshold 600 --input_path mip_wrong_space.nii.gz --label_path mip_seg.nii.gz
 else
 	echo "Error task : "$task
 fi

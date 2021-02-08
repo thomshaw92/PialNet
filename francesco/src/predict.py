@@ -24,8 +24,15 @@ def main(ckp_path, ckp_name, input_path, label_path, threshold):
     slv = seg_solver.Solver(None, params, ["predicting"])
     if y is not None:
         y = tf.keras.utils.to_categorical(tf.cast(y, tf.int32), params["out_ch"])
-        pred, metrics = slv.test_step(network, np.copy(x) / float(threshold), y)
-        print(threshold, metrics)
+        print(y.shape)
+        
+        x = x / float(threshold)
+        pred = np.zeros_like(x)
+
+        for j in range(0, x.shape[1], 128):
+        	for k in range(0, x.shape[2], 128):
+        		pred[:, j:j + 128, k:k + 128, :, :], metrics = slv.test_step(network, x[:, j:j + 128, k:k + 128, :, :], y)
+        		print(metrics)
     else:
         x = x / float(threshold)
         pred = np.zeros_like(x)

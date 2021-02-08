@@ -106,8 +106,9 @@ def create_TF_records_augmented_data(data_path):
 def load_testing_volume(base_path, input_path, label_path):
     input_volume = nib.load(base_path + input_path)
     x = input_volume.get_fdata()
+    y = None
 
-    if "zipCor" in input_path:
+    if "zipCor" in input_path or "mip_" in input_path:
         assert(x.shape[0] == 1090 and x.shape[1] == 1277 and x.shape[2] == 52)
         pad = [(31, 31), (2, 1), (38, 38)]
         x = np.pad(x, pad, 'constant')
@@ -120,12 +121,9 @@ def load_testing_volume(base_path, input_path, label_path):
         x = np.pad(x, pad, 'constant')
 
     x = np.float32(np.array([np.expand_dims(x, -1)]))
-    assert (len(x.shape) == 5 and x.shape[0] == 1 and x.shape[-1] == 1)
-
-    if label_path is not None:
-        y = np.pad(nib.load(base_path + label_path).get_fdata(), [(28, 27), (3, 2), (38, 38)], 'constant')
+    if label_path:
+        y = np.pad(nib.load(base_path + label_path).get_fdata(), pad, 'constant')
         y = np.float32(np.array([np.expand_dims(y, -1)]))
-    else:
-        y = None
+    assert (len(x.shape) == 5 and x.shape[0] == 1 and x.shape[-1] == 1)
 
     return x, y, input_volume.affine, input_volume.header, pad
