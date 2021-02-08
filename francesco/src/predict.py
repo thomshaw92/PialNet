@@ -33,7 +33,7 @@ def main(ckp_path, ckp_name, input_path, label_path, threshold):
                 if len(np.unique(y[:, j:j + 128, k:k + 128, :, :])) > 1:
                 	total_metrics.append(metrics["dice_score_by_class"][1].numpy())
         print(total_metrics)
-        print(np.array(total_metrics).numpy())
+        print(np.array(total_metrics).mean())
     else:
         x = x / float(threshold)
         pred = np.zeros_like(x)
