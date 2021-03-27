@@ -15,5 +15,4 @@ module load openmpi3
 module load anaconda/3.6
 source activate /opt/ohpc/pub/apps/tensorflow_2.0.0
 
-#srun -n 1 python3 francesco/src/create_tf_records.py
 srun -n 1 python3 francesco/src/train_seg.py
