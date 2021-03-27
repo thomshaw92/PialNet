@@ -3,7 +3,7 @@
 #SBATCH --job-name=lab2im
 #SBATCH -n 1
 #SBATCH -c 6
-#SBATCH --mem=50000
+#SBATCH --mem=250000
 #SBATCH -o out_wiener.txt
 #SBATCH -e error_wiener.txt
 #SBATCH --partition=gpu
