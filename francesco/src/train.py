@@ -1,26 +1,21 @@
 import tensorflow as tf
 
 from tf_utils import TFRecordsManager, misc
-from model import seg_solver, unet
+from model import solver, unet
 
 
 def main(params):
-    # Set up directory paths
     base_path, ckp_path = misc.get_base_path(training=True, prefix="SEG-")
-    data_path = base_path + params["data_path"]
-
-    # TFRecords
     records_manager = TFRecordsManager()
-    params["out_ch"] = len(list(range(2)))
-    datasets = records_manager.load_datasets(data_path, params["batch_size"])
+    datasets = records_manager.load_datasets(base_path + params["data_path"], params["batch_size"])
 
     # Model
     network = unet.UNet(params["out_ch"], params["n_layers"], params["starting_filters"], params["k_size"], params["kernel_initializer"], params["batch_norm"],
                         params["dropout"], tf.keras.layers.LeakyReLU, params["conv_per_layer"], params["max_pool"], params["upsampling"],
                         params["kernel_regularizer"])
-    # network.summary((128, 128, 128, 1))
+    #network.summary((128, 128, 128, 1))
 
-    slv = seg_solver.Solver(ckp_path, params, list(datasets.keys()))
+    slv = solver.Solver(ckp_path, params, list(datasets.keys()))
     for n_epoch in range(1000000):
         for mode in datasets:
             slv.iterate_dataset(network, datasets[mode], mode, n_epoch)
@@ -38,9 +33,9 @@ if __name__ == "__main__":
 
     n_layers_vector = [5]
     lr_vector = [3e-4]
-    batch_norm_vector = [True]
+    batch_norm_vector = [False]
     dropout_vector = [0.]
-    batch_size_vector = [1]
+    batch_size_vector = [4]
     k_size_vector = [3]
     starting_filters_vector = [32]
     max_pool_vector = [False]
@@ -50,7 +45,8 @@ if __name__ == "__main__":
     kernel_initializer_vector = ["he_normal"]
     kernel_regularizer_vector = [None]
     early_stopping = 25
-    data_path = "PialNet_data/TF_records_20210113_114136/"
+    data_path = "dataset/original/TF_records_20210327_215958/"
+    out_ch = 2
 
     for n_layers in n_layers_vector:
         for lr in lr_vector:
@@ -79,4 +75,5 @@ if __name__ == "__main__":
                                                               "kernel_initializer": kernel_initializer,
                                                               "kernel_regularizer": kernel_regularizer,
                                                               "early_stopping": early_stopping,
-                                                              "data_path": data_path})
+                                                              "data_path": data_path,
+                                                              "out_ch": out_ch})
