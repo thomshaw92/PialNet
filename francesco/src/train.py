@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     n_layers_vector = [5]
     lr_vector = [3e-4]
-    batch_norm_vector = [False]
+    batch_norm_vector = [True]
     dropout_vector = [0.]
     batch_size_vector = [4]
     k_size_vector = [3]

@@ -43,9 +43,18 @@ class Solver:
             y = tf.keras.utils.to_categorical(tf.cast(batch["y"], tf.int32), self.params["out_ch"])
             if "train" in mode:
                 predictions, metrics = self.train_step(network, batch["x"], y)
-            else:
-                predictions, metrics = self.test_step(network, batch["x"], y, mode, np.zeros([batch["x"].shape[0], batch["x"].shape[1], batch["x"].shape[2],
-                                                                                              batch["x"].shape[3], self.params["out_ch"]]))
+            elif "val" in mode:
+                predictions, metrics = self.test_step(network, batch["x"], y, mode)
+            elif "test" in mode:
+                logits = np.zeros([batch["x"].shape[0], batch["x"].shape[1], batch["x"].shape[2], batch["x"].shape[3], self.params["out_ch"]])
+                for j in range(0, logits.shape[1], 256):
+                    for k in range(0, logits.shape[2], 256):
+                        logits[:, j:j + 256, k:k + 256, :, :] = self.test_step(network, batch["x"][:, j:j + 256, k:k + 256, :, :], None, mode)
+
+                logits = tf.cast(logits, tf.float64)
+                metrics = {"loss": self.loss_manager.metrics[self.params["loss"]](tf.cast(y, tf.float64), logits),
+                           "dice_score_by_class": self.loss_manager.dice_score_from_logits(tf.cast(y, tf.float64), logits)}
+
             self.tb_manager.update_metrics(metrics)
 
         epoch_metrics = self.tb_manager.get_current_metrics()
@@ -67,14 +76,12 @@ class Solver:
 
         return misc.get_argmax_prediction(logits), {"loss": loss, "dice_score_by_class": dice_scores_by_class}
 
-    #@tf.function
-    def test_step(self, network, x, y, mode, logits):
-        if "test" not in mode:
-            logits = network(x, training=False)
-        else:
-            for j in range(0, x.shape[1], 256):
-                for k in range(0, x.shape[2], 256):
-                    logits[:, j:j + 256, k:k + 256, :, :] = network(x[:, j:j + 256, k:k + 256, :, :], training=False)
+    @tf.function
+    def test_step(self, network, x, y, mode):
+        logits = network(x, training=False)
+
+        if "test" in mode:
+            return logits
 
         if y is None:
             return misc.get_argmax_prediction(logits)
