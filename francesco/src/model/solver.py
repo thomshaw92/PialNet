@@ -52,11 +52,11 @@ class Solver:
                         logits[:, j:j + 256, k:k + 256, :, :] = self.test_step(network, batch["x"][:, j:j + 256, k:k + 256, :, :], None, mode)
 
                 logits = tf.cast(logits, tf.float64)
+                predictions = misc.get_argmax_prediction(logits)
                 metrics = {"loss": self.loss_manager.metrics[self.params["loss"]](tf.cast(y, tf.float64), logits),
                            "dice_score_by_class": self.loss_manager.dice_score_from_logits(tf.cast(y, tf.float64), logits)}
 
             self.tb_manager.update_metrics(metrics)
-            predictions = misc.get_argmax_prediction(logits)
 
         epoch_metrics = self.tb_manager.get_current_metrics()
         self.tb_manager.write_summary(mode, n_epoch, {"x": batch["x"], "y": tf.expand_dims(batch["y"], -1), "pred": predictions})
