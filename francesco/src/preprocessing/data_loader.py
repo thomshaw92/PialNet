@@ -1,19 +1,18 @@
 import glob
 import nibabel as nib
 import numpy as np
-import os
 from intensity_normalization.normalize import nyul
 from intensity_normalization.utilities import io
 
 from tf_utils import misc, TFRecordsManager
 
 
-def create_TF_records(data_path):
+def create_TF_records(data_path, normalize):
     base_path = misc.get_base_path(training=False)
 
     TFManager = TFRecordsManager()
     data_purposes = ["train", "val", "test"]
-    params = {"data_purposes": data_purposes, "data_keys": {"x": "float32", "y": "float32"}}
+    params = {"data_purposes": data_purposes, "data_keys": {"x": "float32", "y": "float32"}, "normalize": normalize, "data_path": data_path}
     TFRecords_path = misc.create_TF_records_folder(base_path + data_path, data_purposes)
     misc.save_json(TFRecords_path + "params.json", params)
 
@@ -35,11 +34,18 @@ def create_TF_records(data_path):
             if "train" in data_purpose or "val" in data_purpose:
                 x = nib.load(x_files[i]).get_fdata()
                 y = nib.load(y_files[i]).get_fdata()
-                assert (x.max() <= 255. and x.min() >= 0. and x.shape == y.shape and y.max() == 1 and y.min() == 0. and x.shape == (325, 304, 600))
-                x = x / 255.
+                if normalize:
+                    assert (x.max() <= 255. and x.min() >= 0. and x.shape == y.shape and y.max() == 1 and y.min() == 0. and "original" in data_path)
+                    x /= float(255.)
 
-                x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
-                y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
+                if "original" in data_path:
+                    assert(x.shape == (325, 304, 600))
+                    x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
+                    y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
+                elif "augmented" in data_path:
+                    assert(x.shape == (163, 152, 300))
+                    x_patches = misc.make_patches(x, [(46, 47), (52, 52), (42, 42)], 128)
+                    y_patches = misc.make_patches(y, [(46, 47), (52, 52), (42, 42)], 128)
                 assert (len(x_patches) == len(y_patches))
 
                 for k in range(len(x_patches)):
@@ -50,7 +56,11 @@ def create_TF_records(data_path):
             elif "test" in data_purpose:
                 x_normalized = nyul.do_hist_norm(io.open_nii(x_files[i]), percs, standard_scale, mask=None)
                 io.save_nii(x_normalized, TFRecords_path + "normalized.nii", is_nii=True)
-                x_normalized = np.pad(x_normalized.get_fdata() / float(255.), [(95, 95), (1, 2), (16, 16)], 'constant')
+                x_normalized = x_normalized.get_fdata()
+                if normalize:
+                    x_normalized /= float(255.)
+                assert(x_normalized.shape == (325, 304, 600))
+                x_normalized = np.pad(x_normalized, [(95, 95), (1, 2), (16, 16)], 'constant')
                 y = np.pad(nib.load(y_files[i]).get_fdata(), [(95, 95), (1, 2), (16, 16)], 'constant')
                 data.append({"x": np.float32(np.expand_dims(x_normalized, -1)), "y": np.float32(y)})
             else:
