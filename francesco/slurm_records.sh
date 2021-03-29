@@ -12,6 +12,7 @@
 module load anaconda/3.6
 #conda create -y --name lab2im_env python=3.6
 conda env list
+
 source activate lab2im_env
 srun -n 1 python3 francesco/src/create_tf_records.py
 conda deactivate

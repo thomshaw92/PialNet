@@ -11,7 +11,7 @@ def main(params):
 
     # Model
     norm_layer = datasets["train"].map(lambda x: x["x"]) if not misc.load_json(base_path + params["data_path"] + "params.json")["normalize"] else None
-    params["norm_layer"] = norm_layer
+    params["norm_layer"] = False if norm_layer is None else True
     network = UNet(params["out_ch"], params["n_layers"], params["starting_filters"], params["k_size"], params["kernel_initializer"], params["batch_norm"],
                    params["dropout"], tf.keras.layers.LeakyReLU, params["conv_per_layer"], params["max_pool"], params["upsampling"],
                    params["kernel_regularizer"], norm_layer)
