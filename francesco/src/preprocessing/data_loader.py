@@ -58,8 +58,9 @@ def create_TF_records(data_path, normalize):
                 io.save_nii(x_normalized, TFRecords_path + "normalized.nii", is_nii=True)
                 x_normalized = x_normalized.get_fdata()
                 if normalize:
+                    assert ("original" in data_path)
                     x_normalized /= float(255.)
-                assert(x_normalized.shape == (325, 304, 600))
+                assert(x_normalized.shape == (1090, 1277, 32))
                 x_normalized = np.pad(x_normalized, [(95, 95), (1, 2), (16, 16)], 'constant')
                 y = np.pad(nib.load(y_files[i]).get_fdata(), [(95, 95), (1, 2), (16, 16)], 'constant')
                 data.append({"x": np.float32(np.expand_dims(x_normalized, -1)), "y": np.float32(y)})
