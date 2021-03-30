@@ -71,27 +71,36 @@ def create_TF_records(data_path, normalize):
         del data
 
 
-def load_testing_volume(base_path, input_path, label_path):
-    input_volume = nib.load(base_path + input_path)
-    x = input_volume.get_fdata()
-    y = None
+def load_testing_volume(paths, norm_stats_path):
+    data, meta = {}, {}
+    norm_pkl = misc.load_pickle(norm_stats_path)
 
-    if "zipCor" in input_path or "mip_" in input_path:
-        assert(x.shape[0] == 1090 and x.shape[1] == 1277 and x.shape[2] == 52)
-        pad = [(31, 31), (2, 1), (38, 38)]
-        x = np.pad(x, pad, 'constant')
-    elif "biasCor.nii" in input_path:
-        assert (x.shape[0] == 1090 and x.shape[1] == 1280 and x.shape[2] == 52)
-        pad = [(31, 31), (0, 0), (38, 38)]
-        x = np.pad(x, pad, 'constant')
-    elif "imageData" in input_path:
-        pad = [(28, 27), (3, 2), (38, 38)]
-        x = np.pad(x, pad, 'constant')
+    for label in paths:
+        if paths[label] is None:
+            data[label] = None
+            continue
 
-    x = np.float32(np.array([np.expand_dims(x, -1)]))
-    if label_path:
-        y = np.pad(nib.load(base_path + label_path).get_fdata(), pad, 'constant')
-        y = np.float32(np.array([np.expand_dims(y, -1)]))
-    assert (len(x.shape) == 5 and x.shape[0] == 1 and x.shape[-1] == 1)
+        volume = nib.load(paths[label])
+        if "x" == label:
+            data[label] = nyul.do_hist_norm(io.open_nii(paths[label]), norm_pkl["percs"], norm_pkl["standard_scale"], mask=None).get_fdata()
+        else:
+            data[label] = volume.get_fdata()
 
-    return x, y, input_volume.affine, input_volume.header, pad
+        # Add metadata
+        if "affine" not in meta:
+            meta["affine"] = volume.affine
+            meta["header"] = volume.header
+            meta["orig_shape"] = volume.shape
+
+            # Check if padding needed
+            pad_size, is_same_shape = misc.get_how_much_to_pad(meta["orig_shape"], 256)
+
+        # Convert to float32 and expand_dims
+        data[label] = np.float32(np.array([np.expand_dims(data[label], -1)]))
+        assert (len(data[label].shape) == 5 and data[label].shape[0] == 1 and data[label].shape[-1] == 1)
+
+        # Add padding if needed
+        if not is_same_shape:
+            data[label], _, meta["pad_added"] = misc.add_padding(data[label], pad_size)
+
+    return data, meta
