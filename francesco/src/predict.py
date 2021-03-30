@@ -36,12 +36,12 @@ def main(ckp_path, ckp_name, input_path, label_path):
         with open(ckp_path + "prediction_stats.txt", "a") as file:
             file.write(ckp_name + " " + input_path + " : " + str(slv.loss_manager.dice_score_from_logits(tf.cast(data["y"], tf.float64), logits).numpy()) + "\n")
 
-    assert (len(logits.shape) == 5)
+    assert (len(logits.shape) == 5 and logits.shape[-1] == 1)
     if "pad_added" in meta:
-        logits = misc.remove_padding(logits, meta["orig_shape"], meta["pad_added"])
+        predictions = misc.remove_padding(predictions, meta["orig_shape"], meta["pad_added"])
 
     filename = input_path.split("/")[-1].split(".")[0]
-    nib.save(nib.Nifti1Image(logits[0, :, :, :, 0], meta["affine"], meta["header"]), ckp_path + str(ckp_name) + "-" + filename + ".nii.gz")
+    nib.save(nib.Nifti1Image(predictions[0, :, :, :, 0], meta["affine"], meta["header"]), ckp_path + str(ckp_name) + "-" + filename + ".nii.gz")
 
 
 if __name__ == "__main__":
