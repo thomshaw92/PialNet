@@ -82,9 +82,7 @@ def load_testing_volume(paths, norm_stats_path):
 
         volume = nib.load(paths[label])
         if "x" == label:
-            data[label] = nyul.do_hist_norm(io.open_nii(paths[label]), norm_pkl["percs"], norm_pkl["standard_scale"], mask=None)
-            io.save_nii(data[label], "volume_normalized.nii", is_nii=True)
-            data[label] = data[label].get_fdata()
+            data[label] = nyul.do_hist_norm(io.open_nii(paths[label]), norm_pkl["percs"], norm_pkl["standard_scale"], mask=None).get_fdata()
             data[label] /= float(255.)
         else:
             data[label] = volume.get_fdata()
