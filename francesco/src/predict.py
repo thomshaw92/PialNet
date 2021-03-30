@@ -16,7 +16,7 @@ def main(ckp_path, ckp_name, input_path, label_path):
     network = UNet(params["out_ch"], params["n_layers"], params["starting_filters"], params["k_size"], params["kernel_initializer"], params["batch_norm"],
                    params["dropout"], tf.keras.layers.LeakyReLU, params["conv_per_layer"], params["max_pool"], params["upsampling"],
                    params["kernel_regularizer"], params["norm_layer"], is_predicting=True)
-    #network.load_weights(base_path + ckp_path + ckp_name)
+    network.load_weights(base_path + ckp_path + ckp_name)
 
     slv = solver.Solver(None, params, ["predicting"])
 
@@ -33,15 +33,15 @@ def main(ckp_path, ckp_name, input_path, label_path):
     predictions = misc.get_argmax_prediction(logits)
 
     if label_path is not None:
-        with open(ckp_path + "prediction_stats.txt", "a") as file:
+        with open(base_path + ckp_path + "prediction_stats.txt", "a") as file:
             file.write(ckp_name + " " + input_path + " : " + str(slv.loss_manager.dice_score_from_logits(tf.cast(data["y"], tf.float64), logits).numpy()) + "\n")
 
-    assert (len(logits.shape) == 5 and logits.shape[-1] == 1)
+    assert (len(predictions.shape) == 5 and predictions.shape[-1] == 1)
     if "pad_added" in meta:
         predictions = misc.remove_padding(predictions, meta["orig_shape"], meta["pad_added"])
 
     filename = input_path.split("/")[-1].split(".")[0]
-    nib.save(nib.Nifti1Image(predictions[0, :, :, :, 0], meta["affine"], meta["header"]), ckp_path + str(ckp_name) + "-" + filename + ".nii.gz")
+    nib.save(nib.Nifti1Image(predictions[0, :, :, :, 0], meta["affine"], meta["header"]), base_path + ckp_path + str(ckp_name) + "-" + filename + ".nii.gz")
 
 
 if __name__ == "__main__":
