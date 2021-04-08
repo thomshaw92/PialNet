@@ -17,13 +17,12 @@ output_dir_160=/winmounts/uqtshaw/data.cai.uq.edu.au/MRASEG-Q3461/data/synthetic
 mkdir -p ${output_dir} ${output_dir_160}
 ml ants
 ml fsl
-# multiply the manual seg by the manual seg mask (seg_TOF_etc)
-
+# multiply the manual seg by the manual seg mask (seg_TOF_etc) to make seg only
 fslmaths ${reference_image_folder}/TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_denoised_2SR_resampled_22-52_masked.nii \
 -mul ${reference_image_folder}/seg_TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_H400_L300_C10_resized_22-52_masked.nii \
 ${reference_image_folder}/manual_seg_mult_mask.nii.gz
 
-#subtract the manual seg mask by the original
+#subtract the manual seg mask by the original to make brain meat only
 fslmaths ${reference_image_folder}/TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_denoised_2SR_resampled_22-52_masked.nii \
 -sub ${reference_image_folder}/seg_TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_H400_L300_C10_resized_22-52_masked.nii \
 ${reference_image_folder}/manual_seg_sub_mask.nii.gz
@@ -38,7 +37,7 @@ for x in {1..100} ; do
     fslmaths ${source_image_folder}/${x}.nii.gz -sub ${source_seg_folder}/${x}.nii.gz ${output_dir}/${x}_brain_only.nii.gz
     fslmaths ${source_image_folder_160}/${x}.nii.gz -sub ${source_seg_folder_160}/${x}.nii.gz ${output_dir_160}/${x}_brain_only.nii.gz
 done
-#then histmatch the seg synthetic to the seg manual,
+#then histmatch the seg class synthetic to the seg class manual,
 for x in {1..100} ; do
     ImageMath 3 ${output_dir}/${x}_segmentation_class_histmatched.nii.gz HistogramMatch ${output_dir}/${x}_vessels_only.nii.gz ${reference_image_folder}/manual_seg_mult_mask.nii.gz
     ImageMath 3 ${output_dir}/${x}_segmentation_class_histmatched_160.nii.gz HistogramMatch ${output_dir}/${x}_vessels_only.nii.gz ${reference_image_folder}/manual_seg_mult_mask.nii.gz
@@ -48,7 +47,7 @@ for x in {1..100} ; do
     ImageMath 3 ${output_dir}/${x}_brain_class_histmatched.nii.gz HistogramMatch ${output_dir}/${x}_brain_only.nii.gz ${reference_image_folder}/manual_seg_sub_mask.nii.gz
     ImageMath 3 ${output_dir}/${x}_brain_class_histmatched_160.nii.gz HistogramMatch ${output_dir}/${x}_brain_only.nii.gz ${reference_image_folder}/manual_seg_sub_mask.nii.gz
 done
-#add them back together
+#add the new histmatched classes back together to make new images
 for x in {1..100} ; do
     fslmaths ${output_dir}/${x}_segmentation_class_histmatched.nii.gz -add ${output_dir}/${x}_brain_class_histmatched.nii.gz ${output_dir}/${x}_both_classes_histmatched.nii.gz
     fslmaths ${output_dir_160}/${x}_segmentation_class_histmatched_160.nii.gz -add ${output_dir}/${x}_brain_class_histmatched_160.nii.gz ${output_dir}/${x}_both_classes_histmatched_160.nii.gz
