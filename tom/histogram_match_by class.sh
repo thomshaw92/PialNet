@@ -14,7 +14,7 @@ reference_image_folder=/winmounts/uqtshaw/data.cai.uq.edu.au/MRASEG-Q3461/data/M
 output_dir=/winmounts/uqtshaw/data.cai.uq.edu.au/MRASEG-Q3461/data/synthetic/raw_class-wise_histmatched
 output_dir_160=/winmounts/uqtshaw/data.cai.uq.edu.au/MRASEG-Q3461/data/synthetic/raw_class-wise_histmatched_160
 
-mkdir -p ${output_dir}
+mkdir -p ${output_dir} ${output_dir_160}
 ml ants
 ml fsl
 # multiply the manual seg by the manual seg mask (seg_TOF_etc)
