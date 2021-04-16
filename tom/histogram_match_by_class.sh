@@ -43,10 +43,10 @@ done
 for x in {1..100} ; do
     echo "brain ${x}"
     #invert mask
-    ImageMath 3 ${output_dir}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${source_seg_folder}/${x}.nii.gz 1 1 2
-    ImageMath 3 ${output_dir}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${output_dir}/${x}_seg_inverted.nii.gz 0 0 1
-    ImageMath 3 ${output_dir}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${output_dir}/${x}_seg_inverted.nii.gz 2 2 0
-    fslmaths ${source_image_folder}/${x}.nii.gz -mul ${output_dir}/${x}_seg_inverted.nii.gz ${output_dir}/${x}_brain_only.nii.gz
+    #ImageMath 3 ${output_dir}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${source_seg_folder}/${x}.nii.gz 1 1 2
+    #ImageMath 3 ${output_dir}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${output_dir}/${x}_seg_inverted.nii.gz 0 0 1
+    #ImageMath 3 ${output_dir}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${output_dir}/${x}_seg_inverted.nii.gz 2 2 0
+    #fslmaths ${source_image_folder}/${x}.nii.gz -mul ${output_dir}/${x}_seg_inverted.nii.gz ${output_dir}/${x}_brain_only.nii.gz
 done
 #then histmatch the seg class synthetic to the seg class manual,
 for x in {1..100} ; do
@@ -56,30 +56,30 @@ done
 #and the synth brain to the manual brain
 for x in {1..100} ; do
     echo "histmatch brain ${x}"
-    ImageMath 3 ${output_dir}/${x}_brain_class_histmatched.nii.gz HistogramMatch ${output_dir}/${x}_brain_only.nii.gz ${reference_image_folder}/manual_seg_sub_mask.nii.gz
+    #ImageMath 3 ${output_dir}/${x}_brain_class_histmatched.nii.gz HistogramMatch ${output_dir}/${x}_brain_only.nii.gz ${reference_image_folder}/manual_seg_sub_mask.nii.gz
 done
 #add the new histmatched classes back together to make new images
 for x in {1..100} ; do
     echo "add together ${x}"
-    fslmaths ${output_dir}/${x}_segmentation_class_histmatched.nii.gz -add ${output_dir}/${x}_brain_class_histmatched.nii.gz ${output_dir}/${x}_both_classes_histmatched.nii.gz
+    #fslmaths ${output_dir}/${x}_segmentation_class_histmatched.nii.gz -add ${output_dir}/${x}_brain_class_histmatched.nii.gz ${output_dir}/${x}_both_classes_histmatched.nii.gz
 done
 for x in {1..100} ; do
     echo "rescale ${x}"
-    ImageMath 3 ${output_dir}/${x}_both_classes_histmatched.nii.gz RescaleImage ${output_dir}/${x}_both_classes_histmatched.nii.gz 0 1
+    #ImageMath 3 ${output_dir}/${x}_both_classes_histmatched.nii.gz RescaleImage ${output_dir}/${x}_both_classes_histmatched.nii.gz 0 1
 done
 
 #and do the poor man's histmatch
 for x in {1..100} ; do
     echo "poor man's histmatch $x"
     #first rescale between 0 and 1
-    ImageMath 3 ${output_dir_rescaled}/${x}_brain_only_rescaled.nii.gz HistogramMatch ${output_dir}/${x}_brain_only.nii.gz 0 1
-    ImageMath 3 ${output_dir_rescaled}/${x}_vessels_only_rescaled.nii.gz HistogramMatch ${output_dir}/${x}_vessels_only.nii.gz 0 1
+    #ImageMath 3 ${output_dir_rescaled}/${x}_brain_only_rescaled.nii.gz RescaleImage ${output_dir}/${x}_brain_only.nii.gz 0 1
+    #ImageMath 3 ${output_dir_rescaled}/${x}_vessels_only_rescaled.nii.gz RescaleImage ${output_dir}/${x}_vessels_only.nii.gz 0 1
     #then scale the brain to be between 0 and 0.3
-    fslmaths ${output_dir_rescaled}/${x}_brain_only_rescaled.nii.gz -mul 0.3 ${output_dir_rescaled}/${x}_brain_only_rescaled-0-3.nii.gz
+    #fslmaths ${output_dir_rescaled}/${x}_brain_only_rescaled.nii.gz -mul 0.3 ${output_dir_rescaled}/${x}_brain_only_rescaled-0-3.nii.gz
     #and the vessels between 0-0.65
-    fslmaths ${output_dir_rescaled}/${x}_vessels_only_rescaled.nii.gz -mul 0.65 ${output_dir_rescaled}/${x}_vessels_only_rescaled-0-65.nii.gz
+    #fslmaths ${output_dir_rescaled}/${x}_vessels_only_rescaled.nii.gz -mul 0.65 ${output_dir_rescaled}/${x}_vessels_only_rescaled-0-65.nii.gz
     #add them together
-    fslmaths ${output_dir_rescaled}/${x}_vessels_only_rescaled-0-65.nii.gz -add ${output_dir_rescaled}/${x}_brain_only_rescaled-0-3.nii.gz ${output_dir_rescaled}/${x}_both_classes_rescaled.nii.gz
+    #fslmaths ${output_dir_rescaled}/${x}_vessels_only_rescaled-0-65.nii.gz -add ${output_dir_rescaled}/${x}_brain_only_rescaled-0-3.nii.gz ${output_dir_rescaled}/${x}_both_classes_rescaled.nii.gz
 done
 
 
@@ -89,8 +89,8 @@ for x in {1..10} ; do
     #fslmaths ${source_image_folder_160}/${x}.nii.gz -mul ${source_seg_folder_160}/${x}.nii.gz ${output_dir_160}/${x}_vessels_only.nii.gz
     #invert mask
     ImageMath 3 ${output_dir_160}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${source_seg_folder_160}/${x}.nii.gz 1 1 2
-    ImageMath 3 ${output_dir_160}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${source_seg_folder_160}/${x}_seg_inverted.nii.gz 0 0 1 
-    ImageMath 3 ${output_dir_160}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${source_seg_folder_160}/${x}_seg_inverted.nii.gz 2 2 0 
+    ImageMath 3 ${output_dir_160}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${output_dir_160}/${x}_seg_inverted.nii.gz 0 0 1 
+    ImageMath 3 ${output_dir_160}/${x}_seg_inverted.nii.gz ReplaceVoxelValue ${output_dir_160}/${x}_seg_inverted.nii.gz 2 2 0 
     fslmaths ${source_image_folder_160}/${x}.nii.gz -mul ${output_dir_160}/${x}_seg_inverted.nii.gz ${output_dir_160}/${x}_brain_only.nii.gz
     #ImageMath 3 ${output_dir_160}/${x}_segmentation_class_histmatched_160.nii.gz HistogramMatch ${output_dir_160}/${x}_vessels_only.nii.gz ${reference_image_folder}/manual_seg_mult_mask.nii.gz
     ImageMath 3 ${output_dir_160}/${x}_brain_class_histmatched_160.nii.gz HistogramMatch ${output_dir_160}/${x}_brain_only.nii.gz ${reference_image_folder}/manual_seg_sub_mask.nii.gz
