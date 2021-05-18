@@ -60,7 +60,6 @@ class Solver:
 
         epoch_metrics = self.tb_manager.get_current_metrics()
         self.tb_manager.write_summary(mode, n_epoch, {"x": batch["x"], "y": tf.expand_dims(batch["y"], -1), "pred": predictions})
-
         if "train" not in mode:
             self.save_model(network, epoch_metrics, mode)
 
