@@ -42,10 +42,6 @@ def create_TF_records(data_path, normalize):
                     assert(x.shape == (325, 304, 600))
                     x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
                     y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
-                elif "augmented" in data_path:
-                    assert(x.shape == (163, 152, 300))
-                    x_patches = misc.make_patches(x, [(46, 47), (52, 52), (42, 42)], 128)
-                    y_patches = misc.make_patches(y, [(46, 47), (52, 52), (42, 42)], 128)
                 assert (len(x_patches) == len(y_patches))
 
                 for k in range(len(x_patches)):

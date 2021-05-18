@@ -10,11 +10,9 @@ def main(params):
     datasets = records_manager.load_datasets(base_path + params["data_path"], params["batch_size"])
 
     # Model
-    norm_layer = datasets["train"].map(lambda x: x["x"]) if not misc.load_json(base_path + params["data_path"] + "params.json")["normalize"] else None
-    params["norm_layer"] = False if norm_layer is None else True
     network = UNet(params["out_ch"], params["n_layers"], params["starting_filters"], params["k_size"], params["kernel_initializer"], params["batch_norm"],
                    params["dropout"], tf.keras.layers.LeakyReLU, params["conv_per_layer"], params["max_pool"], params["upsampling"],
-                   params["kernel_regularizer"], norm_layer)
+                   params["kernel_regularizer"])
     # network.summary((128, 128, 128, 1))
 
     slv = solver.Solver(ckp_path, params, list(datasets.keys()))
@@ -47,7 +45,7 @@ if __name__ == "__main__":
     kernel_initializer_vector = ["he_normal"]
     kernel_regularizer_vector = [None]
     early_stopping = 25
-    data_path = "dataset/augmented/TF_records_20210329_215050/"
+    data_path = "dataset/original/TF_records_20210519_010538/"
     out_ch = 2
 
     for n_layers in n_layers_vector:
