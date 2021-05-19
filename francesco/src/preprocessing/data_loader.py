@@ -12,11 +12,8 @@ def create_records_original_dataset(data_path="dataset/original/", data_purposes
     base_path = misc.get_base_path(training=False)
     TFManager = TFRecordsManager()
     TFRecords_path = misc.create_TF_records_folder(base_path + data_path, data_purposes)
-    misc.save_json(TFRecords_path + "params.json", {"data_purposes": data_purposes,
-                                                    "data_keys": {"x": "float32", "y": "float32"},
-                                                    "data_path": data_path,
-                                                    "type": "create_records_original_dataset"})
-
+    misc.save_json(TFRecords_path + "params.json", {"data_purposes": data_purposes, "data_keys": {"x": "float32", "y": "float32"},
+                                                    "data_path": data_path, "type": "create_records_original_dataset"})
     # Train normalizer to match training data
     ref_files = glob.glob(base_path + data_path + "train/raw/*")
     mask_files = [None] * len(ref_files)
@@ -67,11 +64,8 @@ def create_records_original_dataset_half_manual(data_path="dataset/original/", d
     base_path = misc.get_base_path(training=False)
     TFManager = TFRecordsManager()
     TFRecords_path = misc.create_TF_records_folder(base_path + data_path, data_purposes)
-    misc.save_json(TFRecords_path + "params.json", {"data_purposes": data_purposes,
-                                                    "data_keys": {"x": "float32", "y": "float32"},
-                                                    "data_path": data_path,
-                                                    "type": "create_records_original_dataset_half_manual"})
-
+    misc.save_json(TFRecords_path + "params.json", {"data_purposes": data_purposes, "data_keys": {"x": "float32", "y": "float32"},
+                                                    "data_path": data_path, "type": "create_records_original_dataset_half_manual"})
     # Train normalizer to match training data
     ref_files = glob.glob(base_path + data_path + "train/raw/*")
     mask_files = [None] * len(ref_files)
@@ -82,10 +76,9 @@ def create_records_original_dataset_half_manual(data_path="dataset/original/", d
     name = "TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_denoised_2SR_resampled_22-52_masked.nii"
     x_normalized = nyul.do_hist_norm(io.open_nii(base_path + data_path + "test/raw/" + name), percs, standard_scale, mask=None).get_fdata()
     x_normalized /= float(255.)
-    assert (x_normalized.shape == (1090, 1277, 32))
-
     name = "seg_TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_H400_L300_C10_resized_22-52_masked.nii"
     y_normalized = nib.load(base_path + data_path + "test/seg/" + name).get_fdata()
+    assert (x_normalized.shape == (1090, 1277, 32) and y_normalized.shape == (1090, 1277, 32))
 
     # Pad
     x_normalized = np.pad(x_normalized, [(95, 95), (1, 2), (0, 0)], 'constant')
@@ -120,13 +113,13 @@ def create_records_original_dataset_half_manual(data_path="dataset/original/", d
             else:
                 raise NotImplementedError(data_purpose)
 
-        """if "train" in data_purpose:
-            x_patches = misc.make_patches(x_test_first_half, [(0, 0), (0, 0), (56, 56)], 128)
-            y_patches = misc.make_patches(y_test_first_half, [(0, 0), (0, 0), (56, 56)], 128)
+        if "train" in data_purpose:
+            x_patches = misc.make_patches(x_normalized[:, :, :16], [(0, 0), (0, 0), (56, 56)], 128)
+            y_patches = misc.make_patches(y_normalized[:, :, :16], [(0, 0), (0, 0), (56, 56)], 128)
             for k in range(len(x_patches)):
-                if np.count_nonzero(y_patches[k]) == 0.:
-                    continue
-                data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})"""
+                data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
+            del x_patches
+            del y_patches
 
         TFManager.save_record(TFRecords_path + data_purpose + "/0", data)
         del data
