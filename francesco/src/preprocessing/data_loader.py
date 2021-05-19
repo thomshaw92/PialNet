@@ -7,14 +7,15 @@ from intensity_normalization.utilities import io
 from tf_utils import misc, TFRecordsManager
 
 
-def create_TF_records(data_path, normalize):
+def create_records_original_dataset(data_path="dataset/original/", data_purposes=["train", "val", "test"]):
+    # TFRecords set up with paths
     base_path = misc.get_base_path(training=False)
-
     TFManager = TFRecordsManager()
-    data_purposes = ["train", "val", "test"]
-    params = {"data_purposes": data_purposes, "data_keys": {"x": "float32", "y": "float32"}, "normalize": normalize, "data_path": data_path}
     TFRecords_path = misc.create_TF_records_folder(base_path + data_path, data_purposes)
-    misc.save_json(TFRecords_path + "params.json", params)
+    misc.save_json(TFRecords_path + "params.json", {"data_purposes": data_purposes,
+                                                    "data_keys": {"x": "float32", "y": "float32"},
+                                                    "data_path": data_path,
+                                                    "type": "create_records_original_dataset"})
 
     # Train normalizer to match training data
     ref_files = glob.glob(base_path + data_path + "train/raw/*")
@@ -34,31 +35,25 @@ def create_TF_records(data_path, normalize):
             if "train" in data_purpose or "val" in data_purpose:
                 x = nib.load(x_files[i]).get_fdata()
                 y = nib.load(y_files[i]).get_fdata()
-                if normalize:
-                    assert (x.max() <= 255. and x.min() >= 0. and x.shape == y.shape and y.max() == 1 and y.min() == 0. and "original" in data_path)
-                    x /= float(255.)
+                assert (x.max() <= 255. and x.min() >= 0. and x.shape == y.shape and y.max() == 1 and y.min() == 0.)
+                x /= float(255.)
 
-                if "original" in data_path:
-                    assert (x.shape == (325, 304, 600))
-                    x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
-                    y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
-                assert (len(x_patches) == len(y_patches))
-
+                # Make patches
+                assert (x.shape == (325, 304, 600))
+                x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
+                y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
                 for k in range(len(x_patches)):
-                    if np.count_nonzero(y_patches[k]) == 0.:
-                        continue
-                    data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
-
+                    if np.count_nonzero(y_patches[k]) > 100:
+                        data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
+                del x_patches
+                del y_patches
             elif "test" in data_purpose:
                 x_normalized = nyul.do_hist_norm(io.open_nii(x_files[i]), percs, standard_scale, mask=None)
                 # io.save_nii(x_normalized, TFRecords_path + "normalized.nii", is_nii=True)
-                x_normalized = x_normalized.get_fdata()
-                if normalize:
-                    assert ("original" in data_path)
-                    x_normalized /= float(255.)
+                x_normalized = x_normalized.get_fdata() / float(255.)
                 assert (x_normalized.shape == (1090, 1277, 32))
-                x_normalized = np.pad(x_normalized, [(95, 95), (1, 2), (0, 0)], 'constant')
-                y = np.pad(nib.load(y_files[i]).get_fdata(), [(95, 95), (1, 2), (0, 0)], 'constant')
+                x_normalized = np.pad(x_normalized[:, :, 16:], [(95, 95), (1, 2), (0, 0)], 'constant')
+                y = np.pad(nib.load(y_files[i]).get_fdata()[:, :, 16:], [(95, 95), (1, 2), (0, 0)], 'constant')
                 data.append({"x": np.float32(np.expand_dims(x_normalized, -1)), "y": np.float32(y)})
             else:
                 raise NotImplementedError(data_purpose)
@@ -67,14 +62,15 @@ def create_TF_records(data_path, normalize):
         del data
 
 
-def create_TF_records_with_half_manual(data_path, normalize):
+def create_records_original_dataset_half_manual(data_path="dataset/original/", data_purposes=["train", "val", "test"]):
+    # TFRecords set up with paths
     base_path = misc.get_base_path(training=False)
-
     TFManager = TFRecordsManager()
-    data_purposes = ["train", "val", "test"]
-    params = {"data_purposes": data_purposes, "data_keys": {"x": "float32", "y": "float32"}, "normalize": normalize, "data_path": data_path}
     TFRecords_path = misc.create_TF_records_folder(base_path + data_path, data_purposes)
-    misc.save_json(TFRecords_path + "params.json", params)
+    misc.save_json(TFRecords_path + "params.json", {"data_purposes": data_purposes,
+                                                    "data_keys": {"x": "float32", "y": "float32"},
+                                                    "data_path": data_path,
+                                                    "type": "create_records_original_dataset_half_manual"})
 
     # Train normalizer to match training data
     ref_files = glob.glob(base_path + data_path + "train/raw/*")
@@ -95,12 +91,6 @@ def create_TF_records_with_half_manual(data_path, normalize):
     x_normalized = np.pad(x_normalized, [(95, 95), (1, 2), (0, 0)], 'constant')
     y_normalized = np.pad(y_normalized, [(95, 95), (1, 2), (0, 0)], 'constant')
 
-    # Split first half for training, second for testing
-    x_test_first_half = x_normalized[:, :, :16]
-    x_test_second_half = x_normalized[:, :, 16:]
-    y_test_first_half = y_normalized[:, :, :16]
-    y_test_second_half = y_normalized[:, :, 16:]
-
     for data_purpose in data_purposes:
         x_files = glob.glob(base_path + data_path + data_purpose + "/raw/*")
         y_files = glob.glob(base_path + data_path + data_purpose + "/seg/*")
@@ -113,33 +103,30 @@ def create_TF_records_with_half_manual(data_path, normalize):
             if "train" in data_purpose or "val" in data_purpose:
                 x = nib.load(x_files[i]).get_fdata()
                 y = nib.load(y_files[i]).get_fdata()
-                if normalize:
-                    assert (x.max() <= 255. and x.min() >= 0. and x.shape == y.shape and y.max() == 1 and y.min() == 0. and "original" in data_path)
-                    x /= float(255.)
+                assert (x.max() <= 255. and x.min() >= 0. and x.shape == y.shape and y.max() == 1 and y.min() == 0.)
+                x /= float(255.)
 
-                if "original" in data_path:
-                    assert (x.shape == (325, 304, 600))
-                    x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
-                    y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
-                assert (len(x_patches) == len(y_patches))
-
+                # Make patches
+                assert (x.shape == (325, 304, 600))
+                x_patches = misc.make_patches(x, [(29, 30), (40, 40), (20, 20)], 128)
+                y_patches = misc.make_patches(y, [(29, 30), (40, 40), (20, 20)], 128)
                 for k in range(len(x_patches)):
-                    if np.count_nonzero(y_patches[k]) == 0.:
-                        continue
-                    data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
-
+                    if np.count_nonzero(y_patches[k]) > 100:
+                        data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
+                del x_patches
+                del y_patches
             elif "test" in data_purpose:
-                data.append({"x": np.float32(np.expand_dims(x_test_second_half, -1)), "y": np.float32(y_test_second_half)})
+                data.append({"x": np.float32(np.expand_dims(x_normalized[:, :, 16:], -1)), "y": np.float32(y_normalized[:, :, 16:])})
             else:
                 raise NotImplementedError(data_purpose)
 
-        if "train" in data_purpose:
+        """if "train" in data_purpose:
             x_patches = misc.make_patches(x_test_first_half, [(0, 0), (0, 0), (56, 56)], 128)
-            y_patches = misc.make_patches(x_test_first_half, [(0, 0), (0, 0), (56, 56)], 128)
+            y_patches = misc.make_patches(y_test_first_half, [(0, 0), (0, 0), (56, 56)], 128)
             for k in range(len(x_patches)):
                 if np.count_nonzero(y_patches[k]) == 0.:
                     continue
-                data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})
+                data.append({"x": np.float32(np.expand_dims(x_patches[k], -1)), "y": np.float32(y_patches[k])})"""
 
         TFManager.save_record(TFRecords_path + data_purpose + "/0", data)
         del data
