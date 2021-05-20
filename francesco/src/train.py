@@ -45,7 +45,7 @@ if __name__ == "__main__":
     kernel_initializer_vector = ["he_normal"]
     kernel_regularizer_vector = [None]
     early_stopping = 25
-    data_path = "dataset/original/TF_records_20210519_012440/"
+    data_path = "dataset/original/TF_records_20210521_003030/"
     out_ch = 2
 
     for n_layers in n_layers_vector:
