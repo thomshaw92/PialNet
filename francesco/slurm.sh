@@ -18,4 +18,4 @@ source activate /opt/ohpc/pub/apps/tensorflow_2.0.0
 # srun -n 1 python3 francesco/src/create_tf_records.py
 # srun -n 1 python3 francesco/src/train.py
 srun -n 1 python3 francesco/src/predict.py --ckp_path checkpoints/SEG-ckp_20210521_014649/ --ckp_name test-loss --input_path \
-	"dataset/MRA_P09_denoised/TOF_3D_300um_TR20_TE4p73_sli72_15_biasCor_denoised_2SR.nii.gz"
+	"dataset/MRA_P09_denoised/TOF_3D_300um_TR20_TE4p73_sli72_15_biasCor_denoised_5SR.nii.gz"
