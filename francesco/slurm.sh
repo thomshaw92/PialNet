@@ -27,6 +27,6 @@ for ckp in $(ls "francesco/"$ckp_folder)
 do
 	for res in $(ls "francesco/"$data_folder)
 	do
-		python3 francesco/src/predict.py --ckp_path $ckp_folder$ckp --ckp_name test-loss --input_path $data_folder$res
+		python3 francesco/src/predict.py --ckp_path $ckp_folder$ckp"/" --ckp_name test-loss --input_path $data_folder$res
 	done
 done
