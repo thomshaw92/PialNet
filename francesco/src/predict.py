@@ -15,7 +15,7 @@ def main(ckp_path, ckp_name, input_path, label_path):
 
     network = UNet(params["out_ch"], params["n_layers"], params["starting_filters"], params["k_size"], params["kernel_initializer"], params["batch_norm"],
                    params["dropout"], tf.keras.layers.LeakyReLU, params["conv_per_layer"], params["max_pool"], params["upsampling"],
-                   params["kernel_regularizer"], params["norm_layer"], is_predicting=True)
+                   params["kernel_regularizer"])
     network.load_weights(base_path + ckp_path + ckp_name)
 
     slv = solver.Solver(None, params, ["predicting"])
