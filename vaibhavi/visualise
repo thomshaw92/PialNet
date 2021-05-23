@@ -1,0 +1,30 @@
+addpath('/scratch/cvl/uqvitkya/code/spm12');
+addpath(genpath('/scratch/cvl/uqvitkya/code/uniqcforboston/code'));
+%load data
+data_path = '/afm02/Q3/Q3461/data/MRA_P11/bias_correction_corrected';
+file_name = 'TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_21_biasCor_zipCor.nii';
+segmentation_path = '/afm02/Q3/Q3461/results/francesco_hackathon';
+segmentation_file = 'TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_21_biasCor_zipCor-epoch-44-600.nii';
+mask_path = '/afm02/Q3/Q3461/data/MRA_P11/masks_corrected';
+mask_file = 'TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_21_biasCor_mask_c_zipCor.nii';
+
+raw = MrImage(fullfile(data_path, file_name));
+%raw.maxip('z').plot('rotate90',1);
+seg = MrImage(fullfile(segmentation_path, segmentation_file));
+%seg.maxip('z').plot('rotate90',1);
+mask = MrImage(fullfile(mask_path, mask_file));
+
+raw_mask = raw.*mask;
+seg_mask = seg.*mask;
+
+%% plotting
+raw_mask.maxip('z').plot('rotate90',1);
+seg_mask.maxip('z').plot('rotate90',1);
+
+raw_mask.maxip('z').plot('rotate90', 1, 'overlayImages', seg_mask.maxip('z'));
+
+for z = 1:1%raw_mask.dimInfo.nSamples('z')
+    raw_mask.plot('rotate90', 1, 'overlayImages', seg_mask, 'z', z);
+end
+
+fh = raw_mask.select('z', 1:8).maxip('z').plot('rotate90', 1, 'overlayImages', seg_mask.select('z', 1:8).maxip('z'));
