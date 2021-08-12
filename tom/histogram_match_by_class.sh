@@ -18,6 +18,10 @@ output_dir_rescaled=/winmounts/uqtshaw/data.cai.uq.edu.au/MRASEG-Q3461/data/synt
 mkdir -p ${output_dir} ${output_dir_160} ${output_dir_rescaled}
 ml ants
 ml fsl
+
+
+
+: '
 # multiply the manual seg by the manual seg mask (seg_TOF_etc) to make seg only
 fslmaths ${reference_image_folder}/TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_denoised_2SR_resampled_22-52_masked.nii \
 -mul ${reference_image_folder}/seg_TOF_3D_160um_TR20_TE6p56_sli52_FA18_FCY_BW100_27_biasCor_zipCor_H400_L300_C10_resized_22-52_masked.nii \
@@ -68,9 +72,9 @@ for x in {1..100} ; do
     ImageMath 3 ${output_dir}/${x}_both_classes_histmatched.nii.gz RescaleImage ${output_dir}/${x}_both_classes_histmatched.nii.gz 0 1
 done
 
-#and do the poor man's histmatch
+#and do the poor mans histmatch
 for x in {1..100} ; do
-    echo "poor man's histmatch $x"
+    echo "poor mans histmatch $x"
     #first rescale between 0 and 1
     ImageMath 3 ${output_dir_rescaled}/${x}_brain_only_rescaled.nii.gz RescaleImage ${output_dir}/${x}_brain_only.nii.gz 0 1
     ImageMath 3 ${output_dir_rescaled}/${x}_vessels_only_rescaled.nii.gz RescaleImage ${output_dir}/${x}_vessels_only.nii.gz 0 1
@@ -82,9 +86,10 @@ for x in {1..100} ; do
     fslmaths ${output_dir_rescaled}/${x}_vessels_only_rescaled-0-65.nii.gz -add ${output_dir_rescaled}/${x}_brain_only_rescaled-0-3.nii.gz ${output_dir_rescaled}/${x}_both_classes_rescaled.nii.gz
 done
 
+'
 
 #160 micron upsampled - will take longer
-for x in {1..10} ; do
+for x in {9..10} ; do
     echo "160 micron $x"
     fslmaths ${source_image_folder_160}/${x}.nii.gz -mul ${source_seg_folder_160}/${x}.nii.gz ${output_dir_160}/${x}_vessels_only.nii.gz
     #invert mask
